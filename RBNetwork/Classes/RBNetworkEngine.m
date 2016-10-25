@@ -296,7 +296,7 @@ OSSpinLockUnlock(&_lock);
 }
 - (void)handleRequestSuccess:(NSURLSessionTask *)sessionTask responseObject:(id)response {
     RBNetworkRequest  *request = _requestRecordDict[sessionTask.pd_identifier];
-   
+    request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
     if(request.completionBlock) {
         request.isCacheData = NO;
@@ -306,6 +306,7 @@ OSSpinLockUnlock(&_lock);
 }
 - (void)handleRequestFailure:(NSURLSessionTask *)sessionTask responseObject:responseObject error:(NSError *)error {
     RBNetworkRequest  *request = _requestRecordDict[sessionTask.pd_identifier];
+    request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
     
     if (request.completionBlock) {
