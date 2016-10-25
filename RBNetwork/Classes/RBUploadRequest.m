@@ -9,7 +9,14 @@
 #import "RBUploadRequest.h"
 
 @implementation RBUploadRequest
-
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.requestMethod = PDRequestMethodPost;
+    }
+    return self;
+}
 +(void)uploadWithURL:(nullable NSString*)URL parametes:(nullable NSDictionary*)parametes bodyBlock:(nullable PDConstructingBlock)bodyBlock progress:(nullable PDRequestProgressBlock)progressBlock complete:(nullable PDRequestCompletionBlock) completionBlock{
     RBUploadRequest *uploadRequest = [[RBUploadRequest alloc] initWithURLString:URL method:PDRequestMethodPost params:parametes];
     uploadRequest.constructingBodyBlock = bodyBlock;
