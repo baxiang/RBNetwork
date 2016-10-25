@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'RBNetwork_Example' do
+  pod 'RBNetwork', :path => '../'
+
+  target 'RBNetwork_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
