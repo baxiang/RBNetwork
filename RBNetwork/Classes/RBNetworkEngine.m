@@ -11,7 +11,6 @@
 #import "RBUploadRequest.h"
 #import "NSError+PDNetwork.h"
 #import "RBNetworkLogger.h"
-
 #import <CommonCrypto/CommonDigest.h>
 #import <libkern/OSAtomic.h>
 #import  <objc/runtime.h>
@@ -265,11 +264,7 @@ OSSpinLockUnlock(&_lock);
           return;
        }
         request.timeoutInterval = uploadTask.requestTimeout;
-        [[uploadTask.requestHeaders allKeys] enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *value = [uploadTask.requestHeaders valueForKey:key];
-            [request addValue:value forHTTPHeaderField:key];
-        }];
-           __block  NSURLSessionUploadTask *uploadDataTask = nil;
+        __block  NSURLSessionUploadTask *uploadDataTask = nil;
           uploadDataTask = [self.sessionManager uploadTaskWithStreamedRequest:request  progress:^(NSProgress *progress){
                 if (uploadTask.progerssBlock) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -318,38 +313,6 @@ OSSpinLockUnlock(&_lock);
     }
     
 }
-
-//- (void)handleModelWithRequest:(PDNetworkRequest *)request response:(id)response{
-//    Class responseModelClass = request.responseModelClass;
-//    id responseData = response;
-//    if ([response isKindOfClass:[NSDictionary class]]) {
-//        id  jsonData =[response valueForKeyPath:request.responseContentDataKey];
-//        if ([jsonData isKindOfClass:[NSArray class]]) {
-//            if ([responseModelClass isSubclassOfClass:[NSArray class]]) {
-//              responseData =jsonData;
-//            }else{
-//              responseData  = [NSArray modelArrayWithClass:responseModelClass json:jsonData];
-//            }
-//        }else if ([jsonData isKindOfClass:[NSDictionary class]]){
-//            if ([responseModelClass isSubclassOfClass:[NSDictionary class]]) {
-//                responseData = jsonData;
-//            }else{
-//               responseData = [responseModelClass modelWithJSON:jsonData];
-//            }
-//        }
-//    }
-//    if (request.completionBlock) {
-//        if ([responseData isKindOfClass:responseModelClass]) {
-//            request.isCacheData = NO;
-//            request.completionBlock(request,responseData,nil);
-//        }else{
-//            NSError *parseError = [NSError errorWithDomain:PDNetworkRequestErrorDomain code:PDErrorCodeRequestParseFailure description:@"数据解析失败"];
-//            request.completionBlock(request,nil,parseError);
-//        }
-//    }
-//}
-
-
 
 #pragma mark download
 -(void)_startDownloadTask:(RBDownloadRequest *)downloadRequest{
