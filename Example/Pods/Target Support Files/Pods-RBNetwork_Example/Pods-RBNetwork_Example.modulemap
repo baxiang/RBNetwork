@@ -1,0 +1,6 @@
+framework module Pods_RBNetwork_Example {
+  umbrella header "Pods-RBNetwork_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}

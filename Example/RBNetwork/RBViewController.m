@@ -7,7 +7,7 @@
 //
 
 #import "RBViewController.h"
-
+#import "RBNetwork.h"
 @interface RBViewController ()
 
 @end
@@ -17,6 +17,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    RBNetworkRequest * request= [[RBNetworkRequest alloc] init];
 	// Do any additional setup after loading the view, typically from a nib.
 }
 

@@ -1,0 +1,6 @@
+framework module RBNetwork {
+  umbrella header "RBNetwork-umbrella.h"
+
+  export *
+  module * { export * }
+}
