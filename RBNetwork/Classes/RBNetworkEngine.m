@@ -278,7 +278,7 @@ OSSpinLockUnlock(&_lock);
                     [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
                 }
             }];
-            uploadDataTask.pd_identifier = [NSString stringWithFormat:@"%@",uploadDataTask.pd_identifier];
+            uploadDataTask.pd_identifier = [NSString stringWithFormat:@"%@",uploadTask.pd_identifier];
             uploadTask.sessionTask = uploadDataTask;
             [uploadDataTask resume];
             [self addRequestObject:uploadTask];
