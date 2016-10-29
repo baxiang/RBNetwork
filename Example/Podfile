@@ -2,7 +2,7 @@ use_frameworks!
 
 target 'RBNetwork_Example' do
   pod 'RBNetwork', :path => '../'
-
+  pod 'WeiboSDK'
   target 'RBNetwork_Tests' do
     inherit! :search_paths
 

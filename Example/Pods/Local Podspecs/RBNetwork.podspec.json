@@ -1,8 +1,7 @@
 {
   "name": "RBNetwork",
-  "version": "0.1.0",
-  "summary": "A short description of RBNetwork.",
-  "description": "TODO: Add long description of the pod here.",
+  "version": "0.1.2",
+  "summary": "an iOS networking framework based on AFNetworking",
   "homepage": "https://github.com/baxiang/RBNetwork",
   "license": {
     "type": "MIT",
@@ -13,13 +12,12 @@
   },
   "source": {
     "git": "https://github.com/baxiang/RBNetwork.git",
-    "tag": "0.1.0"
+    "tag": "0.1.2"
   },
   "platforms": {
-    "ios": "8.0"
+    "ios": "7.0"
   },
   "source_files": "RBNetwork/Classes/**/*",
-  "public_header_files": "Pod/Classes/**/*.h",
   "dependencies": {
     "AFNetworking": [
 
