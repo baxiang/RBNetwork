@@ -15,9 +15,8 @@
 #import <libkern/OSAtomic.h>
 #import  <objc/runtime.h>
 #import "RBNetworkUtilities.h"
-#import "RBReachability.h"
 #import "RBNetworkUtilities.h"
-
+#import "AFNetworkActivityIndicatorManager.h"
 @interface NSDictionary (PDNetworkEngine)
 - (NSMutableDictionary *)merge:(NSDictionary *)dict;
 @end
@@ -94,15 +93,17 @@ OSSpinLockUnlock(&_lock);
 
 + (RBNetworkEngine *)defaultEngine
 {
-    static RBNetworkEngine *_defaultEngine = nil;
+    static id _defaultEngine = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _defaultEngine = [[RBNetworkEngine alloc] init];
+        _defaultEngine = [[[self class] alloc] init];
     });
     return _defaultEngine;
 }
 
-
++(void)load{
+      [[AFNetworkReachabilityManager sharedManager] startMonitoring];
+}
 
 - (instancetype)init
 {
@@ -111,19 +112,37 @@ OSSpinLockUnlock(&_lock);
         _requestRecordDict = [NSMutableDictionary dictionary];
         _sessionManager = [AFHTTPSessionManager manager];
         _sessionManager.operationQueue.maxConcurrentOperationCount = [RBNetworkConfig defaultConfig].maxConcurrentOperationCount;
-       
+        
+        _lock = dispatch_semaphore_create(1);
         _lock = OS_SPINLOCK_INIT;
         _downloadingModels = [[NSMutableArray alloc] initWithCapacity:1];
         _downloadModelsDict = [[NSMutableDictionary alloc] initWithCapacity:1];
+        [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
+        
     }
     return self;
 }
 
-- (BOOL)isConnectionAvailable
-{
-    return [[RBReachability reachability]isReachable];
+- (NSInteger)networkReachability {
+    return [AFNetworkReachabilityManager sharedManager].networkReachabilityStatus;
 }
 
+#pragma mark network config 请求配置
+
+- (AFHTTPRequestSerializer *)requestSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask{
+    if (requestTask.requestSerializer == PDRequestSerializerTypeHTTP) {
+        return  [AFHTTPRequestSerializer serializer];
+    } else if(requestTask.requestSerializer == PDRequestSerializerTypeJSON) {
+        return  [AFJSONRequestSerializer serializer];
+    }
+}
+- (AFHTTPResponseSerializer *)responseSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask {
+    if (requestTask.responseSerializer == PDResponseSerializerTypeHTTP) {
+        return self.sessionManager.responseSerializer;
+    } else if (requestTask.responseSerializer == PDResponseSerializerTypeJSON) {
+        return [AFJSONResponseSerializer serializer];
+    }
+}
 - (NSString *)urlStringByRequest:(__kindof RBNetworkRequest *)request {
     NSString *detailUrl = request.requestURL;
     if ([detailUrl hasPrefix:@"http"]) {
@@ -150,6 +169,16 @@ OSSpinLockUnlock(&_lock);
     }
     return tempDict;
 }
+-(void)constructionURLRequest:(NSMutableURLRequest *)urlRequest ByRequestTask:(__kindof RBNetworkRequest  *)request{
+    NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].baseRequestHeaders;
+    [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        [urlRequest setValue:obj forHTTPHeaderField:key];
+    }];
+    [request.requestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        [urlRequest setValue:obj forHTTPHeaderField:key];
+    }];
+}
+
 -(NSString*)identifierByRequest:(__kindof RBNetworkRequest *)request{
     NSData *data = [NSJSONSerialization dataWithJSONObject:request.pd_paramsDict options:NSJSONWritingPrettyPrinted error:nil];
     NSString *paramString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -185,7 +214,7 @@ OSSpinLockUnlock(&_lock);
     request.pd_paramsDict = [self requestParamByRequest:request];
     request.pd_identifier = [self identifierByRequest:request];
     [self setupSessionManagerRequestSerializerByRequest:request];
-    if (![self isConnectionAvailable]) {
+    if (![self networkReachability]) {
         NSError *error =[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorNotConnectedToInternet description:@"网络连接失败"];
         if (request.completionBlock) {
              request.completionBlock(request,nil,error);
@@ -207,6 +236,52 @@ OSSpinLockUnlock(&_lock);
         [self _startRequestTask:request];
     }
 }
+
+-(NSUInteger)_startDefaultTask:(RBNetworkRequest *)requestTask{
+    AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:requestTask];
+    NSString*URLStr = [self urlStringByRequest:requestTask];
+    NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
+    NSError *serializationError = nil;
+    NSMutableURLRequest *request = [requestSerializer requestWithMethod:requestTask.httpMethodString URLString:URLStr parameters:paramsDict error:&serializationError];
+    if (serializationError) {
+            if (requestTask.completionBlock) {
+                requestTask.completionBlock(requestTask,nil,serializationError);
+            }
+            return 0;
+        }
+    [self constructionURLRequest:request ByRequestTask:requestTask];
+    NSURLSessionDataTask *dataTask = nil;
+    __weak __typeof(self)weakSelf = self;
+    dataTask = [self.sessionManager dataTaskWithRequest:request
+                                      completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
+                                          __strong __typeof(weakSelf)strongSelf = weakSelf;
+                                          [strongSelf constructionResponse:response
+                                                                  object:responseObject
+                                                                   error:error
+                                                                 requestTask:request
+                                                      ];
+                                      }];
+    
+    //[dataTask bindingRequest:request];
+    [requestTask setIdentifier:dataTask.taskIdentifier];
+    [dataTask resume];
+    return requestTask.identifier;
+}
+
+- (void)constructionResponse:(NSURLResponse *)response
+                    object:(id)responseObject
+                     error:(NSError *)error
+                   requestTask:(RBNetworkRequest *)requestTask{
+    NSError *serializationError = nil;
+    AFHTTPResponseSerializer *responseSerializer = [self responseSerializerByRequestTask:requestTask];
+        responseObject = [responseSerializer responseObjectForResponse:response data:responseObject error:&serializationError];
+    if (serializationError||error) {
+        [self handleRequestFailure:requestTask responseObject:responseObject error:error];
+    }else{
+        [self handleRequestSuccess:requestTask responseObject:responseObject];
+    }
+}
+
 - (void)cancelTask:(RBNetworkRequest *)requestTask{
     [requestTask.sessionTask cancel];
     [self removeRequestObject:requestTask];

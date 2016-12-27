@@ -8,11 +8,17 @@
 
 #import "RBAppDelegate.h"
 
+#define kAppKey         @"2045436852"
+
+
 @implementation RBAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+   
+    [WeiboSDK enableDebugMode:YES];
+    //[WeiboSDK registerApp:@"3616966952"];
+    [WeiboSDK registerApp:kAppKey];
     return YES;
 }
 
@@ -42,5 +48,47 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+- (void)didReceiveWeiboRequest:(WBBaseRequest *)request
+{
+    if ([request isKindOfClass:WBProvideMessageForWeiboRequest.class])
+    {
+//        ProvideMessageForWeiboViewController *controller = [[[ProvideMessageForWeiboViewController alloc] init] autorelease];
+//        [self.viewController presentModalViewController:controller animated:YES];
+    }
+}
+
+- (void)didReceiveWeiboResponse:(WBBaseResponse *)response
+{
+    if ([response isKindOfClass:WBSendMessageToWeiboResponse.class])
+    {
+        NSString *title = @"发送结果";
+        NSString *message = [NSString stringWithFormat:@"响应状态: %ld\n响应UserInfo数据: %@\n原请求UserInfo数据: %@",
+                             (long)response.statusCode, response.userInfo, response.requestUserInfo];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                                                        message:message
+                                                       delegate:nil
+                                              cancelButtonTitle:@"确定"
+                                              otherButtonTitles:nil];
+        [alert show];
+       
+    }
+    else if ([response isKindOfClass:WBAuthorizeResponse.class])
+    {
+        WBAuthorizeResponse *authorizeResponse = (WBAuthorizeResponse*)response;
+        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse accessToken] forKey:@"RBAccessToken"];
+        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse expirationDate] forKey:@"RBExpirationDate"];
+        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse refreshToken] forKey:@"RBRefreshToken"];
+        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse userID] forKey:@"RBuserID"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        
+       
+    }
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    return [WeiboSDK handleOpenURL:url delegate:self];
+}
+
 
 @end
