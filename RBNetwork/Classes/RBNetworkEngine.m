@@ -16,6 +16,7 @@
 #import  <objc/runtime.h>
 #import "RBNetworkUtilities.h"
 #import "RBNetworkUtilities.h"
+#import <pthread/pthread.h>
 #import "AFNetworkActivityIndicatorManager.h"
 @interface NSDictionary (PDNetworkEngine)
 - (NSMutableDictionary *)merge:(NSDictionary *)dict;
@@ -77,18 +78,19 @@
 }
 
 @end
-#define LOCK(...) OSSpinLockLock(&_lock); \
-__VA_ARGS__; \
-OSSpinLockUnlock(&_lock);
+
+#define Lock() pthread_mutex_lock(&_lock)
+#define Unlock() pthread_mutex_unlock(&_lock)
 @interface RBNetworkEngine()
 @property (nonatomic, strong) NSMutableDictionary <NSString*, __kindof RBNetworkRequest*>*requestRecordDict;
-@property (nonatomic,strong) AFHTTPSessionManager *sessionManager;
+@property (nonatomic, strong) AFHTTPSessionManager *sessionManager;
 @property (nonatomic, strong) NSMutableArray <__kindof RBDownloadRequest *> *downloadingModels;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, __kindof RBDownloadRequest *> *downloadModelsDict;
 @end
 @implementation RBNetworkEngine{
   
     OSSpinLock _lock;
+    AFJSONResponseSerializer *_jsonResponseSerializer;
 }
 
 + (RBNetworkEngine *)defaultEngine
@@ -233,7 +235,7 @@ OSSpinLockUnlock(&_lock);
     }else if ([request isKindOfClass:[RBUploadRequest class]]){
         [self _startUploadTask:(RBUploadRequest*)request];
     }else{
-        [self _startRequestTask:request];
+        [self _startDefaultTask:request];
     }
 }
 
@@ -250,36 +252,94 @@ OSSpinLockUnlock(&_lock);
             return 0;
         }
     [self constructionURLRequest:request ByRequestTask:requestTask];
-    NSURLSessionDataTask *dataTask = nil;
+    __block NSURLSessionDataTask *dataTask = nil;
     __weak __typeof(self)weakSelf = self;
     dataTask = [self.sessionManager dataTaskWithRequest:request
                                       completionHandler:^(NSURLResponse *response, id responseObject, NSError *error) {
                                           __strong __typeof(weakSelf)strongSelf = weakSelf;
-                                          [strongSelf constructionResponse:response
-                                                                  object:responseObject
-                                                                   error:error
-                                                                 requestTask:request
-                                                      ];
+                                          [self handleResponseResult:dataTask responseObject:responseObject error:error];
                                       }];
-    
-    //[dataTask bindingRequest:request];
     [requestTask setIdentifier:dataTask.taskIdentifier];
     [dataTask resume];
+    [self addRequestObject:requestTask];
     return requestTask.identifier;
+    
+}
+- (void)handleResponseResult:(NSURLSessionTask *)task responseObject:(id)responseObject error:(NSError *)error {
+    Lock();
+    RBNetworkRequest *request = _requestRecordDict[@(task.taskIdentifier)];
+    Unlock();
+    NSError * __autoreleasing serializationError = nil;
+    NSError * __autoreleasing validationError = nil;
+    request.responseObject = responseObject;
+    BOOL succeed = YES;
+    if ([request.responseObject isKindOfClass:[NSData class]]) {
+        request.responseData = responseObject;
+//        request.responseString = [[NSString alloc] initWithData:responseObject encoding:[YTKNetworkUtils stringEncodingWithRequest:request]];
+       
+        switch (request.responseSerializer) {
+            case PDResponseSerializerTypeHTTP:
+                // Default serializer. Do nothing.
+                break;
+            case PDResponseSerializerTypeJSON:
+                request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
+                //request.responseJSONObject = request.responseObject;
+                break;
+//            case YTKResponseSerializerTypeXMLParser:
+//                request.responseObject = [self.xmlParserResponseSerialzier responseObjectForResponse:task.response data:request.responseData error:&serializationError];
+//                break;
+        }
+    }
+//    if (error) {
+//        succeed = NO;
+//        requestError = error;
+//    } else if (serializationError) {
+//        succeed = NO;
+//        requestError = serializationError;
+//    } else {
+//        succeed = [self validateResult:request error:&validationError];
+//        requestError = validationError;
+//    }
+    
+    if (succeed) {
+       
+        [self requestDidSucceedWithRequest:request];
+    } else {
+        //[self requestDidFailWithRequest:request error:requestError];
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self removeRequestFromRecord:request];
+//        [request clearCompletionBlock];
+    });
+}
+- (void)requestDidSucceedWithRequest:(RBNetworkRequest *)request {
+    @autoreleasepool {
+       // [request requestCompletePreprocessor];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+       // [request toggleAccessoriesWillStopCallBack];
+       // [request requestCompleteFilter];
+        
+//        if (request.delegate != nil) {
+//            [request.delegate requestFinished:request];
+//        }
+        if(request.completionBlock) {
+            request.isCacheData = NO;
+            //id  jsonData =[response valueForKeyPath:request.responseContentDataKey];
+            request.completionBlock(request,nil,nil);
+        }
+        //[request toggleAccessoriesDidStopCallBack];
+    });
 }
 
-- (void)constructionResponse:(NSURLResponse *)response
-                    object:(id)responseObject
-                     error:(NSError *)error
-                   requestTask:(RBNetworkRequest *)requestTask{
-    NSError *serializationError = nil;
-    AFHTTPResponseSerializer *responseSerializer = [self responseSerializerByRequestTask:requestTask];
-        responseObject = [responseSerializer responseObjectForResponse:response data:responseObject error:&serializationError];
-    if (serializationError||error) {
-        [self handleRequestFailure:requestTask responseObject:responseObject error:error];
-    }else{
-        [self handleRequestSuccess:requestTask responseObject:responseObject];
+- (AFJSONResponseSerializer *)jsonResponseSerializer {
+    if (!_jsonResponseSerializer) {
+        _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
+        //_jsonResponseSerializer.acceptableStatusCodes = _allStatusCodes;
+        
     }
+    return _jsonResponseSerializer;
 }
 
 - (void)cancelTask:(RBNetworkRequest *)requestTask{
@@ -294,40 +354,7 @@ OSSpinLockUnlock(&_lock);
    }];
 }
 #pragma mark 普通请求
-- (void)_startRequestTask:(RBNetworkRequest *)requestTask{
-    if (self.requestRecordDict[requestTask.pd_identifier]) {
-        NSError *error =[NSError errorWithDomain:PDNetworkRequestErrorDomain code:PDErrorCodeRequestHightFrequency description:@"网络请求频率过高"];
-        if (requestTask.completionBlock) {
-            requestTask.completionBlock(requestTask,nil,error);
-        }
-        return;
-    }
-    
-    __block  NSURLSessionDataTask *dataTask = nil;
-    NSError *error = nil;
-    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:requestTask.pd_URLString parameters:requestTask.pd_paramsDict error:&error];
-    if (error) {
-        NSError *error =[NSError errorWithDomain:PDNetworkRequestErrorDomain code:PDErrorCodeRequestSendFailure description:@"网络请求失败"];
-        if (requestTask.completionBlock) {
-            requestTask.completionBlock(requestTask,nil,error);
-        }
-        return;
-    }
-    dataTask = [self.sessionManager dataTaskWithRequest:request completionHandler:^(NSURLResponse * _Nonnull response, id  _Nonnull responseObject, NSError * _Nonnull error) {
-        if ([RBNetworkConfig defaultConfig].enableDebug) {
-            [RBNetworkLogger logDebugResponseInfoWithSessionDataTask:dataTask responseObject:responseObject  error:error];
-        }
-        if (!error) {
-            [self handleRequestSuccess:dataTask responseObject:responseObject];
-        }else{
-            [self handleRequestFailure:dataTask responseObject:responseObject error:error];
-        }
-    }];
-    dataTask.pd_identifier = [NSString stringWithFormat:@"%@",requestTask.pd_identifier];
-    requestTask.sessionTask = dataTask;
-    [dataTask resume];
-    [self addRequestObject:requestTask];
-}
+
 - (void)_startUploadTask:(RBUploadRequest *)uploadTask{
         NSError *error = nil;
         NSMutableURLRequest *request =  [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.pd_URLString parameters:uploadTask.pd_paramsDict constructingBodyWithBlock:uploadTask.constructingBodyBlock error:&error];
@@ -362,15 +389,19 @@ OSSpinLockUnlock(&_lock);
 
 - (void)addRequestObject:(__kindof RBNetworkRequest*)request {
     if (request == nil)    return;
-    LOCK( _requestRecordDict[request.pd_identifier] = request);
+    Lock();
+    _requestRecordDict[@(request.identifier)] = request;;
+    Unlock();
 }
 
 - (void)removeRequestObject:(__kindof RBNetworkRequest*)request {
     if(request == nil)  return;
-    LOCK( [_requestRecordDict removeObjectForKey:request.pd_identifier]);
+    Lock();
+     [_requestRecordDict removeObjectForKey:@(request.identifier)];
+    Unlock();
 }
 - (void)handleRequestSuccess:(NSURLSessionTask *)sessionTask responseObject:(id)response {
-    RBNetworkRequest  *request = _requestRecordDict[sessionTask.pd_identifier];
+    RBNetworkRequest  *request = _requestRecordDict[@(sessionTask.taskIdentifier)];
     request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
     if(request.completionBlock) {

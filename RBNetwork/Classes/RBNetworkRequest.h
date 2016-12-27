@@ -86,6 +86,8 @@ typedef void(^PDRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
 @property (nonatomic, readwrite, assign) NSInteger statusCode;
 @property (nonatomic, copy) NSIndexSet *acceptableStatusCodes;
 @property (nonatomic, assign) NSUInteger identifier;
+@property (nonatomic, strong, readwrite, nullable) id responseObject;
+@property (nonatomic, strong, readwrite, nullable) NSData *responseData;
 /**
  *  开始任务
  */

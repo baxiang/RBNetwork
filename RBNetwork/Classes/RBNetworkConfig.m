@@ -24,7 +24,7 @@ NSString * PDNetConfig_Family_List = @"moment/list";        //家庭动态列表
     if (self) {
         _acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
         _defaultRequestSerializer = PDRequestSerializerTypeHTTP;
-        _defaultResponseSerializer = PDResponseSerializerTypeJSON;
+        _defaultResponseSerializer = PDResponseSerializerTypeHTTP;
         _defaultTimeoutInterval = 20.0f;
         _enableDebug = YES;
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];

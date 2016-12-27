@@ -25,6 +25,14 @@
     if (![self isLogin]) {
         UIAlertView *alter = [[UIAlertView alloc] initWithTitle:@"重要提醒" message:@"需要登录微博" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"登录", nil];
         [alter show];
+    }else{
+       NSString *tokenStr  = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBAccessToken"];
+       RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"https://api.weibo.com/2/statuses/public_timeline.json" method:PDRequestMethodGet params:@{@"access_token":tokenStr}];
+        request.responseSerializer = PDResponseSerializerTypeJSON;
+        [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
+            NSLog(@"%@",requestTask.responseObject);
+        }];
+    
     }
 }
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
