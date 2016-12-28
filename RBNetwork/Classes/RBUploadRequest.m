@@ -58,14 +58,7 @@
     return _uploadFormDatas;
 }
 
-+(void)uploadWithURL:(nullable NSString*)URL parametes:(nullable NSDictionary*)parametes bodyBlock:(nullable RBConstructingBlock)bodyBlock progress:(nullable RBRequestProgressBlock)progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock{
-    RBUploadRequest *uploadRequest = [[RBUploadRequest alloc] initWithURLString:URL method:RBRequestMethodPost params:parametes];
-    uploadRequest.constructingBodyBlock = bodyBlock;
-    //uploadRequest.progerssBlock = progressBlock;
-    //uploadRequest.completionBlock = completionBlock;
-    [uploadRequest start];
 
-}
 - (void)addFormDataWithName:(NSString *)name fileData:(NSData *)fileData {
     RBUploadFormData *formData = [RBUploadFormData formDataWithName:name fileData:fileData];
     [self.uploadFormDatas addObject:formData];

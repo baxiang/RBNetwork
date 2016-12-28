@@ -58,5 +58,5 @@
  *  下载的剩余时间
  */
 @property (nonatomic, assign) int32_t downloadLeft;
-+(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable RBRequestProgressBlock )progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock;
+
 @end

@@ -11,11 +11,11 @@
 #import "RBDownloadRequest.h"
 
 @interface RBNetworkEngine : NSObject
-+ (RBNetworkEngine *)defaultEngine;
-- (void)executeRequestTask:(RBNetworkRequest *)request;
-- (void)cancelTask:(RBNetworkRequest *)httpTask;
++ (nullable RBNetworkEngine *)defaultEngine;
+- (void)executeRequestTask:(nullable RBNetworkRequest *)request;
+- (void)cancelTask:(nullable RBNetworkRequest *)httpTask;
 - (void)cancelAllTask;
-+ (NSUInteger)sendRequest:(RBConstructBlock)configBlock
++ (NSUInteger)sendRequest:(nullable RBConstructBlock)configBlock
                 onSuccess:(nullable RBSuccessBlock)successBlock
                 onFailure:(nullable RBFailureBlock)failureBlock;
 @end

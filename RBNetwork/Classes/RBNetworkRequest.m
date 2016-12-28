@@ -41,11 +41,6 @@
 - (void)stop {
     [[RBNetworkEngine defaultEngine] cancelTask:self];
 }
-- (void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock{
-    //self.completionBlock = completionBlock;
-    [self start];
-}
-
 
 
 - (NSString *)httpMethodString

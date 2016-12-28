@@ -57,27 +57,27 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityHigh = 4,
 };
 
-typedef void (^RBConstructBlock)(RBNetworkRequest *request);
-typedef void (^RBProgressBlock)(NSProgress *progress);
+typedef void (^RBConstructBlock)(RBNetworkRequest *_Nullable request);
+typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);
 typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable error);
 
 @interface RBNetworkConfig : NSObject
 
-+ (RBNetworkConfig *)defaultConfig;
++ (nullable RBNetworkConfig *)defaultConfig;
 /**
  *  url 请求的URL
  */
-@property (nonatomic, copy) NSString *baseUrlString;
+@property (nonatomic, copy,nullable) NSString *baseUrlString;
 /**
  *  header 请求头
  */
-@property (nonatomic, copy) NSDictionary<NSString *,NSString *>*  baseRequestHeaders;
+@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>*  baseRequestHeaders;
 /**
  *  params 请求参数
  */
-@property (nonatomic, copy) NSDictionary<NSString *,NSString *>*  baseRequestParams;
+@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>*  baseRequestParams;
 /**
  *   默认RBRequestSerializerTypeHTTP（
  */
@@ -93,24 +93,20 @@ typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable
 /**
  *   默认：[NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html", nil]
  */
-@property (nonatomic, copy) NSSet<NSString *> *acceptableContentTypes;
+@property (nonatomic, copy,nullable) NSSet<NSString *> *acceptableContentTypes;
 /**
  *  @brief 请求超时时间，默认20秒
  */
-@property (nonatomic, assign) NSTimeInterval defaultTimeoutInterval;
+@property (nonatomic, assign,) NSTimeInterval defaultTimeoutInterval;
 /**
  *  下载数据的路径
  */
-@property (nonatomic,copy) NSString *downloadFolderPath;
+@property (nonatomic,copy,nullable) NSString *downloadFolderPath;
 
-@property (nonatomic, strong) NSIndexSet *defaultAcceptableStatusCodes;
+@property (nonatomic, strong,nullable) NSIndexSet *defaultAcceptableStatusCodes;
 /**
  *  @brief 是否打开debug日志，默认打开
  */
 @property (nonatomic, assign) BOOL enableDebug;
-@property (nonatomic, strong) NSString *responseCodeKey;
 
-@property (nonatomic, strong) NSString *responseMessageKey;
-
-@property (nonatomic, strong) NSString *responseContentDataKey;
 @end

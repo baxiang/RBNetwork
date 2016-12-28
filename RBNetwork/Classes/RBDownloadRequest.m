@@ -10,11 +10,7 @@
 
 @implementation RBDownloadRequest
 
-+(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable RBRequestProgressBlock )progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock{
-    RBDownloadRequest *downloadRequest = [[RBDownloadRequest alloc] initWithURLString:URL method:RBRequestMethodGet params:parametes];
-    //downloadRequest.progressBlock = progressBlock;
-    //[downloadRequest startWithCompletionBlock:completionBlock];
-}
+
 -(NSString *)fileName{
     if (!_fileName) {
         NSURL *fileURL = [NSURL URLWithString:self.requestURL];
