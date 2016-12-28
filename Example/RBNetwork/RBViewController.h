@@ -8,6 +8,6 @@
 
 @import UIKit;
 
-@interface RBViewController : UIViewController
+@interface RBViewController : UITableViewController
 
 @end

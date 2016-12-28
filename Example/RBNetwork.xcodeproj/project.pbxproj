@@ -20,7 +20,6 @@
 		6003F5B2195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
-		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		C1C5956EE2A1031BEE42D9A5 /* Pods_RBNetwork_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC76AF47366CA6A05D61F9D3 /* Pods_RBNetwork_Example.framework */; };
 		C98F104C987106DDE7D1400C /* Pods_RBNetwork_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B91E35572A9BDB7E308A85B /* Pods_RBNetwork_Tests.framework */; };
 /* End PBXBuildFile section */
@@ -61,7 +60,6 @@
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		67DEED7E65533D8390B031DF /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		84756344C97AC38126ABBF78 /* Pods-RBNetwork_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RBNetwork_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RBNetwork_Tests/Pods-RBNetwork_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		DC76AF47366CA6A05D61F9D3 /* Pods_RBNetwork_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RBNetwork_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9FD4BA2E42052A0C43468C9 /* Pods-RBNetwork_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RBNetwork_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-RBNetwork_Example/Pods-RBNetwork_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		FF3BA914E8AD3D0DD51B164B /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
@@ -132,7 +130,6 @@
 			children = (
 				6003F59C195388D20070C39A /* RBAppDelegate.h */,
 				6003F59D195388D20070C39A /* RBAppDelegate.m */,
-				873B8AEA1B1F5CCA007FD442 /* Main.storyboard */,
 				6003F5A5195388D20070C39A /* RBViewController.h */,
 				6003F5A6195388D20070C39A /* RBViewController.m */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
@@ -280,7 +277,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */,
 				6003F5A9195388D20070C39A /* Images.xcassets in Resources */,
 				6003F598195388D20070C39A /* InfoPlist.strings in Resources */,
 			);
@@ -521,11 +517,13 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RBNetwork/RBNetwork-Prefix.pch";
 				INFOPLIST_FILE = "RBNetwork/RBNetwork-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sina.weibo.SNWeiboSDKDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "378fc43c-070b-4642-8311-dc12170a78b1";
 				PROVISIONING_PROFILE_SPECIFIER = DevelopTeam;
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -540,9 +538,11 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RBNetwork/RBNetwork-Prefix.pch";
 				INFOPLIST_FILE = "RBNetwork/RBNetwork-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sina.weibo.SNWeiboSDKDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

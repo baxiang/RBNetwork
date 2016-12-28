@@ -7,17 +7,19 @@
 //
 
 #import "RBAppDelegate.h"
-
-#define kAppKey         @"2045436852"
+#import "RBViewController.h"
+#define kAppKey      @"2045436852"
 
 
 @implementation RBAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-   
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[RBViewController alloc] init]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    [self.window makeKeyAndVisible];
     [WeiboSDK enableDebugMode:YES];
-    //[WeiboSDK registerApp:@"3616966952"];
     [WeiboSDK registerApp:kAppKey];
     return YES;
 }
