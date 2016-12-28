@@ -8,7 +8,7 @@
 
 #import "RBAppDelegate.h"
 #import "RBViewController.h"
-#define kAppKey      @"2045436852"
+#import "RBNetworkConfig.h"
 
 
 @implementation RBAppDelegate
@@ -20,10 +20,15 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     [WeiboSDK enableDebugMode:YES];
-    [WeiboSDK registerApp:kAppKey];
+    [WeiboSDK registerApp:@"2045436852"];
+    [self setupDefaultNetConfig];
     return YES;
 }
-
+-(void)setupDefaultNetConfig{
+     RBNetworkConfig *networkConfig  = [RBNetworkConfig defaultConfig];
+     networkConfig.baseUrlString = @"https://api.weibo.com/2";
+     networkConfig.defaultResponseSerializer = RBResponseSerializerTypeJSON;
+}
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

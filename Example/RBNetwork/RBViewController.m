@@ -12,7 +12,7 @@
 //#import "WXApi.h"
 #define kRedirectURI    @"http://www.sina.com"
 @interface RBViewController ()
-
+@property(nonatomic,copy) NSString *weiboToken;
 @end
 
 @implementation RBViewController
@@ -27,9 +27,10 @@
         [alter show];
     }else{
        
-    
+     _weiboToken  = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBAccessToken"];
     }
 }
+
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return 10;
 }
@@ -46,9 +47,8 @@
     }
 }
 -(void)fetchPublicTimeline{
-    NSString *tokenStr  = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBAccessToken"];
-    RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"https://api.weibo.com/2/statuses/public_timeline.json" method:PDRequestMethodGet params:@{@"access_token":tokenStr}];
-    //request.responseSerializer = PDResponseSerializerTypeJSON;
+   
+    RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"/statuses/public_timeline.json" method:RBRequestMethodGet params:@{@"access_token":_weiboToken}];
     [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
         NSLog(@"%@",requestTask.responseObject);
     }];

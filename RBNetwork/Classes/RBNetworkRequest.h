@@ -1,5 +1,5 @@
 
-//  PDNetworkRequest.h
+//  RBNetworkRequest.h
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -8,21 +8,21 @@
 
 #import <Foundation/Foundation.h>
 @class RBNetworkRequest;
-@class PDNetworkResponse;
+@class RBNetworkResponse;
 #import "RBNetworkConfig.h"
 
-typedef NS_ENUM(NSUInteger, PDRequestState)
+typedef NS_ENUM(NSUInteger, RBRequestState)
 {
-    PDRequestStateWaiting = 0,
-    PDRequestStateRunning ,
-    PDRequestStateSuspended ,
-    PDRequestStateCanceling ,
-    PDRequestStateCompleted
+    RBRequestStateWaiting = 0,
+    RBRequestStateRunning ,
+    RBRequestStateSuspended ,
+    RBRequestStateCanceling ,
+    RBRequestStateCompleted
 };
 
-typedef void(^PDRequestCompletionBlock)(__kindof RBNetworkRequest *requestTask,id response,NSError *error);
-typedef void(^PDRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress *progress);
-//typedef void(^PDRequestCacheCompletion)(__kindof PDNetworkRequest *task, id cacheData);
+typedef void(^RBRequestCompletionBlock)(__kindof RBNetworkRequest *requestTask,id response,NSError *error);
+typedef void(^RBRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress *progress);
+//typedef void(^RBRequestCacheCompletion)(__kindof RBNetworkRequest *task, id cacheData);
 
 @protocol RBRequestDelegate <NSObject>
 
@@ -45,22 +45,22 @@ typedef void(^PDRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
 /**
  *  request Method
  */
-@property (nonatomic, assign) PDRequestMethod requestMethod;
+@property (nonatomic, assign) RBRequestMethod requestMethod;
 /**
  *  Timeout
  */
 @property (nonatomic, assign) NSTimeInterval requestTimeout;
 @property (nonatomic,strong)  NSDictionary *requestParameters;
 @property (nonatomic, strong) NSURLSessionTask *sessionTask;
-@property (nonatomic, assign) PDRequestSerializerType  requestSerializer;
-@property (nonatomic, assign) PDResponseSerializerType responseSerializer;
+@property (nonatomic, assign) RBRequestSerializerType  requestSerializer;
+@property (nonatomic, assign) RBResponseSerializerType responseSerializer;
 @property (nonatomic, copy)   NSDictionary<NSString *,NSString *>*  requestHeaders;
 //任务类型
-@property (nonatomic, assign) PDNetworkTaskType taskType;
+@property (nonatomic, assign) RBNetworkTaskType taskType;
 /**
  *  请求的缓存策略
  */
-@property (nonatomic, assign) PDNetworkCachePolicy cachePolicy;
+@property (nonatomic, assign) RBNetworkCachePolicy cachePolicy;
 /**
  *  是否是缓存数据
  */
@@ -69,16 +69,16 @@ typedef void(^PDRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
 /**
  *  成功的的block
  */
-@property (nonatomic,  copy) PDRequestCompletionBlock completionBlock;
+@property (nonatomic,  copy) RBRequestCompletionBlock completionBlock;
 
 // 上传或者下载进度
-@property (nonatomic,  copy) PDRequestProgressBlock progerssBlock;
+@property (nonatomic,  copy) RBRequestProgressBlock progerssBlock;
 // delegate
 @property (nonatomic, weak) id <RBRequestDelegate> delegate;
 /**
  *  网络请求的结果
  */
-@property (nonatomic,assign) PDRequestState requestState;
+@property (nonatomic,assign) RBRequestState requestState;
 //@property (nonatomic, strong) Class responseModelClass;
 @property (nonatomic, strong) NSString *responseCodeKey;
 @property (nonatomic, strong) NSString *responseMessageKey;
@@ -96,9 +96,9 @@ typedef void(^PDRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
  *  结束任务
  */
 -(void)stop;
--(void)startWithCompletionBlock:(PDRequestCompletionBlock)completionBlock;
+-(void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock;
 
--(instancetype)initWithURLString:(NSString *)URLString method:(PDRequestMethod)method params:(NSDictionary *)paramters;
+-(instancetype)initWithURLString:(NSString *)URLString method:(RBRequestMethod)method params:(NSDictionary *)paramters;
 - (void)clearRequestBlock;
 - (NSString *)httpMethodString;
 

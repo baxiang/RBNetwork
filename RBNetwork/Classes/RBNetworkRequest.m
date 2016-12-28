@@ -1,5 +1,5 @@
 //
-//  PDNetworkRequest.m
+//  RBNetworkRequest.m
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -12,10 +12,10 @@
 @implementation RBNetworkRequest
 
 -(instancetype)init{
-    return [self initWithURLString:@"" method:PDRequestMethodGet params:nil];
+    return [self initWithURLString:@"" method:RBRequestMethodGet params:nil];
 }
 - (instancetype)initWithURLString:(NSString *)URLString
-                           method:(PDRequestMethod)method
+                           method:(RBRequestMethod)method
                            params:(NSDictionary *)paramters{
     if (self = [super init]) {
         _requestURL = URLString;
@@ -24,7 +24,7 @@
         self.requestTimeout = [RBNetworkConfig defaultConfig].defaultTimeoutInterval;
         self.requestSerializer = [RBNetworkConfig defaultConfig].defaultRequestSerializer;
         self.responseSerializer = [RBNetworkConfig defaultConfig].defaultResponseSerializer;
-        self.requestState = PDRequestStateWaiting;
+        self.requestState = RBRequestStateWaiting;
     }
     return self;
  
@@ -42,7 +42,7 @@
 - (void)stop {
     [[RBNetworkEngine defaultEngine] cancelTask:self];
 }
-- (void)startWithCompletionBlock:(PDRequestCompletionBlock)completionBlock{
+- (void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock{
     self.completionBlock = completionBlock;
     [self start];
 }
@@ -54,22 +54,22 @@
     NSString *method = nil;
     switch (self.requestMethod)
     {
-        case PDRequestMethodGet:
+        case RBRequestMethodGet:
             method = @"GET";
             break;
-        case PDRequestMethodPost:
+        case RBRequestMethodPost:
             method = @"POST";
             break;
-        case PDRequestMethodPut:
+        case RBRequestMethodPut:
             method = @"PUT";
             break;
-        case PDRequestMethodDelete:
+        case RBRequestMethodDelete:
             method = @"DELETE";
             break;
-        case PDRequestMethodOptions:
+        case RBRequestMethodOptions:
             method = @"OPTIONS";
             break;
-        case PDRequestMethodHead:
+        case RBRequestMethodHead:
             method = @"HEAD";
             break;
         default:
@@ -78,23 +78,23 @@
     }
     return method;
 }
--(PDRequestState)requestState{
+-(RBRequestState)requestState{
     if (!self.sessionTask) {
-        return PDRequestStateWaiting;
+        return RBRequestStateWaiting;
     }
     NSURLSessionTaskState currState = self.sessionTask.state;
     switch (currState) {
         case NSURLSessionTaskStateRunning:
-            return PDRequestStateRunning;
+            return RBRequestStateRunning;
             break;
         case NSURLSessionTaskStateSuspended:
-            return PDRequestStateSuspended;
+            return RBRequestStateSuspended;
             break;
         case NSURLSessionTaskStateCanceling:
-            return PDRequestStateCanceling;
+            return RBRequestStateCanceling;
             break;
         case NSURLSessionTaskStateCompleted:
-            return PDRequestStateCompleted;
+            return RBRequestStateCompleted;
             break;
         default:
             break;

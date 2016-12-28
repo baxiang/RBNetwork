@@ -1,5 +1,5 @@
 //
-//  PDNetworkConfig.h
+//  RBNetworkConfig.h
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -8,54 +8,54 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-UIKIT_EXTERN NSString * PDNetConfig_Msg_List;     //消息中心列表
-UIKIT_EXTERN NSString * PDNetConfig_Family_List;  //家庭动态列表
+UIKIT_EXTERN NSString * RBNetConfig_Msg_List;     //消息中心列表
+UIKIT_EXTERN NSString * RBNetConfig_Family_List;  //家庭动态列表
 
 #if DEBUG
-#define  PDNetworkAssert(condition,fmt,...) \
+#define  RBNetworkAssert(condition,fmt,...) \
 if(!(condition)) {\
 NSAssert(NO,fmt, ##__VA_ARGS__);\
 }
 #else
-#define  PDNetworkAssert(condition,fmt,...) \
+#define  RBNetworkAssert(condition,fmt,...) \
 if(!(condition)) {\
 NSLog((@"crush in debug :%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
 }
 #endif
 
-typedef NS_ENUM(NSUInteger, PDRequestMethod)
+typedef NS_ENUM(NSUInteger, RBRequestMethod)
 {
-    PDRequestMethodGet = 0,
-    PDRequestMethodPost,
-    PDRequestMethodPut,
-    PDRequestMethodDelete,
-    PDRequestMethodOptions,
-    PDRequestMethodHead
+    RBRequestMethodGet = 0,
+    RBRequestMethodPost,
+    RBRequestMethodPut,
+    RBRequestMethodDelete,
+    RBRequestMethodOptions,
+    RBRequestMethodHead
 };
-typedef NS_ENUM(NSUInteger, PDNetworkTaskType)
+typedef NS_ENUM(NSUInteger, RBNetworkTaskType)
 {
-    PDNetworkTaskTypeRequest = 0,
-    PDNetworkTaskTypeDownload ,
-    PDNetworkTaskTypeUpload
+    RBNetworkTaskTypeRequest = 0,
+    RBNetworkTaskTypeDownload ,
+    RBNetworkTaskTypeUpload
 };
-typedef NS_ENUM(NSUInteger, PDNetworkCachePolicy)
+typedef NS_ENUM(NSUInteger, RBNetworkCachePolicy)
 {
-    PDNetworkCachePolicyIgnoreCache = 0,
-    PDNetworkCachePolicyNeedCache
+    RBNetworkCachePolicyIgnoreCache = 0,
+    RBNetworkCachePolicyNeedCache
     
 };
-typedef NS_ENUM(NSInteger , PDRequestSerializerType) {
-    PDRequestSerializerTypeHTTP = 0,
-    PDRequestSerializerTypeJSON,
+typedef NS_ENUM(NSInteger , RBRequestSerializerType) {
+    RBRequestSerializerTypeHTTP = 0,
+    RBRequestSerializerTypeJSON,
 };
-typedef NS_ENUM(NSInteger , PDResponseSerializerType) {
-    PDResponseSerializerTypeHTTP = 0,
-    PDResponseSerializerTypeJSON,
+typedef NS_ENUM(NSInteger , RBResponseSerializerType) {
+    RBResponseSerializerTypeHTTP = 0,
+    RBResponseSerializerTypeJSON,
 };
-typedef NS_ENUM(NSInteger , PDRequestPriority) {
-    PDRequestPriorityLow = -4L,
-    PDRequestPriorityDefault = 0,
-    PDRequestPriorityHigh = 4,
+typedef NS_ENUM(NSInteger , RBRequestPriority) {
+    RBRequestPriorityLow = -4L,
+    RBRequestPriorityDefault = 0,
+    RBRequestPriorityHigh = 4,
 };
 
 @interface RBNetworkConfig : NSObject
@@ -74,13 +74,13 @@ typedef NS_ENUM(NSInteger , PDRequestPriority) {
  */
 @property (nonatomic, copy) NSDictionary<NSString *,NSString *>*  baseRequestParams;
 /**
- *   默认PDRequestSerializerTypeHTTP（
+ *   默认RBRequestSerializerTypeHTTP（
  */
-@property (nonatomic, assign) PDRequestSerializerType  defaultRequestSerializer;
+@property (nonatomic, assign) RBRequestSerializerType  defaultRequestSerializer;
 /**
- *  默认返回数据类型 PDResponseSerializerTypeJSON
+ *  默认返回数据类型 RBResponseSerializerTypeJSON
  */
-@property (nonatomic, assign) PDResponseSerializerType defaultResponseSerializer;
+@property (nonatomic, assign) RBResponseSerializerType defaultResponseSerializer;
 /**
  *  网络请求的最大队列数量
  */

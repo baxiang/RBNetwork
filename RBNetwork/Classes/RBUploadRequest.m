@@ -1,5 +1,5 @@
 //
-//  PDUploadRequest.m
+//  RBUploadRequest.m
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -13,12 +13,12 @@
 {
     self = [super init];
     if (self) {
-        self.requestMethod = PDRequestMethodPost;
+        self.requestMethod = RBRequestMethodPost;
     }
     return self;
 }
-+(void)uploadWithURL:(nullable NSString*)URL parametes:(nullable NSDictionary*)parametes bodyBlock:(nullable PDConstructingBlock)bodyBlock progress:(nullable PDRequestProgressBlock)progressBlock complete:(nullable PDRequestCompletionBlock) completionBlock{
-    RBUploadRequest *uploadRequest = [[RBUploadRequest alloc] initWithURLString:URL method:PDRequestMethodPost params:parametes];
++(void)uploadWithURL:(nullable NSString*)URL parametes:(nullable NSDictionary*)parametes bodyBlock:(nullable RBConstructingBlock)bodyBlock progress:(nullable RBRequestProgressBlock)progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock{
+    RBUploadRequest *uploadRequest = [[RBUploadRequest alloc] initWithURLString:URL method:RBRequestMethodPost params:parametes];
     uploadRequest.constructingBodyBlock = bodyBlock;
     uploadRequest.progerssBlock = progressBlock;
     uploadRequest.completionBlock = completionBlock;

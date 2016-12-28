@@ -1,5 +1,5 @@
 //
-//  PDDownloadRequest.h
+//  RBDownloadRequest.h
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -58,5 +58,5 @@
  *  下载的剩余时间
  */
 @property (nonatomic, assign) int32_t downloadLeft;
-+(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable PDRequestProgressBlock )progressBlock complete:(nullable PDRequestCompletionBlock) completionBlock;
++(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable RBRequestProgressBlock )progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock;
 @end

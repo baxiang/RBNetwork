@@ -1,5 +1,5 @@
 //
-//  PDNetworkEngine.h
+//  RBNetworkEngine.h
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -16,5 +16,5 @@
 - (void)cancelAllTask;
 
 
--(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(PDRequestCompletionBlock)completionBlock;
+-(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(RBRequestCompletionBlock)completionBlock;
 @end

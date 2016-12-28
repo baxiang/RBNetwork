@@ -1,5 +1,5 @@
 //
-//  PDNetworkEngine.m
+//  RBNetworkEngine.m
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -9,7 +9,7 @@
 #import "RBNetworkEngine.h"
 #import "AFNetworking.h"
 #import "RBUploadRequest.h"
-#import "NSError+PDNetwork.h"
+#import "NSError+RBNetwork.h"
 #import "RBNetworkLogger.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <libkern/OSAtomic.h>
@@ -18,10 +18,10 @@
 #import "RBNetworkUtilities.h"
 #import <pthread/pthread.h>
 #import "AFNetworkActivityIndicatorManager.h"
-@interface NSDictionary (PDNetworkEngine)
+@interface NSDictionary (RBNetworkEngine)
 - (NSMutableDictionary *)merge:(NSDictionary *)dict;
 @end
-@implementation NSDictionary (PDNetworkEngine)
+@implementation NSDictionary (RBNetworkEngine)
 - (NSMutableDictionary *)merge:(NSDictionary *)dict {
     @try {
         NSMutableDictionary *result = nil;
@@ -50,30 +50,30 @@
 }
 @end
 
-@interface NSObject(PDNetworkEngine)
-@property(nonatomic,strong)NSString * pd_URLString;
-@property(nonatomic,strong)NSDictionary *pd_paramsDict;
-@property (nonatomic, copy)NSString *pd_identifier;
+@interface NSObject(RBNetworkEngine)
+@property(nonatomic,strong)NSString * RB_URLString;
+@property(nonatomic,strong)NSDictionary *RB_paramsDict;
+@property (nonatomic, copy)NSString *RB_identifier;
 @end
-@implementation NSObject(PDNetworkEngine)
+@implementation NSObject(RBNetworkEngine)
 
--(void)setPd_URLString:(NSString *)pd_URLString{
-  objc_setAssociatedObject(self, @selector(pd_URLString), pd_URLString, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setRB_URLString:(NSString *)RB_URLString{
+  objc_setAssociatedObject(self, @selector(RB_URLString), RB_URLString, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSString *)pd_URLString{
+-(NSString *)RB_URLString{
     return  objc_getAssociatedObject(self, _cmd);
 }
--(void)setPd_paramsDict:(NSDictionary *)pd_paramsDict{
-  objc_setAssociatedObject(self, @selector(pd_paramsDict), pd_paramsDict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setRB_paramsDict:(NSDictionary *)RB_paramsDict{
+  objc_setAssociatedObject(self, @selector(RB_paramsDict), RB_paramsDict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSDictionary *)pd_paramsDict{
+-(NSDictionary *)RB_paramsDict{
   return  objc_getAssociatedObject(self, _cmd);
 }
 
--(void)setPd_identifier:(NSString *)pd_identifier{
-   objc_setAssociatedObject(self, @selector(pd_identifier), pd_identifier, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setRB_identifier:(NSString *)RB_identifier{
+   objc_setAssociatedObject(self, @selector(RB_identifier), RB_identifier, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(NSString *)pd_identifier{
+-(NSString *)RB_identifier{
   return  objc_getAssociatedObject(self, _cmd);
 }
 
@@ -132,16 +132,16 @@
 #pragma mark network config 请求配置
 
 - (AFHTTPRequestSerializer *)requestSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask{
-    if (requestTask.requestSerializer == PDRequestSerializerTypeHTTP) {
+    if (requestTask.requestSerializer == RBRequestSerializerTypeHTTP) {
         return  [AFHTTPRequestSerializer serializer];
-    } else if(requestTask.requestSerializer == PDRequestSerializerTypeJSON) {
+    } else if(requestTask.requestSerializer == RBRequestSerializerTypeJSON) {
         return  [AFJSONRequestSerializer serializer];
     }
 }
 - (AFHTTPResponseSerializer *)responseSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask {
-    if (requestTask.responseSerializer == PDResponseSerializerTypeHTTP) {
+    if (requestTask.responseSerializer == RBResponseSerializerTypeHTTP) {
         return self.sessionManager.responseSerializer;
-    } else if (requestTask.responseSerializer == PDResponseSerializerTypeJSON) {
+    } else if (requestTask.responseSerializer == RBResponseSerializerTypeJSON) {
         return [AFJSONResponseSerializer serializer];
     }
 }
@@ -159,17 +159,17 @@
     return [NSString stringWithFormat:@"%@%@",baseUrlString,detailUrl];
 }
 - (NSDictionary *)requestParamByRequest:(__kindof RBNetworkRequest  *)request {
-    NSMutableDictionary *tempDict = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *temRBict = [[NSMutableDictionary alloc] init];
     if (request.requestParameters&&[request.requestParameters isKindOfClass:[NSDictionary class]]) {
-        [tempDict addEntriesFromDictionary:request.requestParameters];
+        [temRBict addEntriesFromDictionary:request.requestParameters];
         
     }
     NSDictionary *baseRequestParamSource = [RBNetworkConfig defaultConfig].baseRequestParams;
     if (baseRequestParamSource != nil) {
-        NSDictionary *mergeDict =[baseRequestParamSource merge:tempDict];
-        [tempDict addEntriesFromDictionary:mergeDict];
+        NSDictionary *mergeDict =[baseRequestParamSource merge:temRBict];
+        [temRBict addEntriesFromDictionary:mergeDict];
     }
-    return tempDict;
+    return temRBict;
 }
 -(void)constructionURLRequest:(NSMutableURLRequest *)urlRequest ByRequestTask:(__kindof RBNetworkRequest  *)request{
     NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].baseRequestHeaders;
@@ -182,15 +182,15 @@
 }
 
 -(NSString*)identifierByRequest:(__kindof RBNetworkRequest *)request{
-    NSData *data = [NSJSONSerialization dataWithJSONObject:request.pd_paramsDict options:NSJSONWritingPrettyPrinted error:nil];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:request.RB_paramsDict options:NSJSONWritingPrettyPrinted error:nil];
     NSString *paramString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSString *cacheKey = [NSString stringWithFormat:@"%@%@%@",request.httpMethodString,request.pd_URLString,paramString];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@%@%@",request.httpMethodString,request.RB_URLString,paramString];
     return [RBNetworkUtilities md5String:cacheKey];
 }
 - (void)setupSessionManagerRequestSerializerByRequest:(__kindof RBNetworkRequest *)request {
     //配置requestSerializerType
-    self.sessionManager.requestSerializer = request.requestSerializer == PDRequestSerializerTypeHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
-    self.sessionManager.responseSerializer = request.responseSerializer == PDResponseSerializerTypeHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
+    self.sessionManager.requestSerializer = request.requestSerializer == RBRequestSerializerTypeHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
+    self.sessionManager.responseSerializer = request.responseSerializer == RBResponseSerializerTypeHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
     //配置请求头
     NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].baseRequestHeaders;
     [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
@@ -206,15 +206,15 @@
 }
 
 
--(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(PDRequestCompletionBlock)completionBlock;{
-    RBNetworkRequest *request = [[[RBNetworkRequest class] alloc] initWithURLString:URLString method:PDRequestMethodPost params:paramters];
+-(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(RBRequestCompletionBlock)completionBlock;{
+    RBNetworkRequest *request = [[[RBNetworkRequest class] alloc] initWithURLString:URLString method:RBRequestMethodPost params:paramters];
     [request startWithCompletionBlock:completionBlock];
 }
 
 - (void)executeRequestTask:(RBNetworkRequest *)request{
-    request.pd_URLString = [self urlStringByRequest:request];
-    request.pd_paramsDict = [self requestParamByRequest:request];
-    request.pd_identifier = [self identifierByRequest:request];
+    request.RB_URLString = [self urlStringByRequest:request];
+    request.RB_paramsDict = [self requestParamByRequest:request];
+    request.RB_identifier = [self identifierByRequest:request];
     [self setupSessionManagerRequestSerializerByRequest:request];
     if (![self networkReachability]) {
         NSError *error =[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorNotConnectedToInternet description:@"网络连接失败"];
@@ -224,7 +224,7 @@
         return;
     }
     if ([RBNetworkConfig defaultConfig].enableDebug) {
-        [RBNetworkLogger logDebugRequestInfoWithURL:request.pd_URLString  methodName:request.httpMethodString params:request.pd_paramsDict reachabilityStatus:[[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus]];
+        [RBNetworkLogger logDebugRequestInfoWithURL:request.RB_URLString  methodName:request.httpMethodString params:request.RB_paramsDict reachabilityStatus:[[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus]];
     }
     NSIndexSet *acceptableStatusCodes = request.acceptableStatusCodes ?: [RBNetworkConfig defaultConfig].defaultAcceptableStatusCodes;
     if (acceptableStatusCodes) {
@@ -241,10 +241,10 @@
 
 -(NSUInteger)_startDefaultTask:(RBNetworkRequest *)requestTask{
     AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:requestTask];
-    NSString*URLStr = [self urlStringByRequest:requestTask];
+    NSString*urlStr = [self urlStringByRequest:requestTask];
     NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
     NSError *serializationError = nil;
-    NSMutableURLRequest *request = [requestSerializer requestWithMethod:requestTask.httpMethodString URLString:URLStr parameters:paramsDict error:&serializationError];
+    NSMutableURLRequest *request = [requestSerializer requestWithMethod:requestTask.httpMethodString URLString:urlStr parameters:paramsDict error:&serializationError];
     if (serializationError) {
             if (requestTask.completionBlock) {
                 requestTask.completionBlock(requestTask,nil,serializationError);
@@ -278,10 +278,10 @@
 //        request.responseString = [[NSString alloc] initWithData:responseObject encoding:[YTKNetworkUtils stringEncodingWithRequest:request]];
        
         switch (request.responseSerializer) {
-            case PDResponseSerializerTypeHTTP:
+            case RBResponseSerializerTypeHTTP:
                 // Default serializer. Do nothing.
                 break;
-            case PDResponseSerializerTypeJSON:
+            case RBResponseSerializerTypeJSON:
                 request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
                 //request.responseJSONObject = request.responseObject;
                 break;
@@ -357,9 +357,9 @@
 
 - (void)_startUploadTask:(RBUploadRequest *)uploadTask{
         NSError *error = nil;
-        NSMutableURLRequest *request =  [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.pd_URLString parameters:uploadTask.pd_paramsDict constructingBodyWithBlock:uploadTask.constructingBodyBlock error:&error];
+        NSMutableURLRequest *request =  [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.RB_URLString parameters:uploadTask.RB_paramsDict constructingBodyWithBlock:uploadTask.constructingBodyBlock error:&error];
       if (error) {
-        NSError *error =[NSError errorWithDomain:PDNetworkRequestErrorDomain code:PDErrorCodeRequestSendFailure description:@"上传文件失败"];
+        NSError *error =[NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestSendFailure description:@"上传文件失败"];
         if (uploadTask.completionBlock) {
             uploadTask.completionBlock(uploadTask,nil,error);
         }
@@ -380,7 +380,7 @@
                     [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
                 }
             }];
-            uploadDataTask.pd_identifier = [NSString stringWithFormat:@"%@",uploadTask.pd_identifier];
+            uploadDataTask.RB_identifier = [NSString stringWithFormat:@"%@",uploadTask.RB_identifier];
             uploadTask.sessionTask = uploadDataTask;
             [uploadDataTask resume];
             [self addRequestObject:uploadTask];
@@ -411,7 +411,7 @@
     }
 }
 - (void)handleRequestFailure:(NSURLSessionTask *)sessionTask responseObject:responseObject error:(NSError *)error {
-    RBNetworkRequest  *request = _requestRecordDict[sessionTask.pd_identifier];
+    RBNetworkRequest  *request = _requestRecordDict[sessionTask.RB_identifier];
     request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
     
@@ -431,7 +431,7 @@
     }
     downloadRequest.resumeData = [NSData dataWithContentsOfFile:downloadRequest.resumeFilePath];
     if (downloadRequest.resumeData.length == 0) {
-        NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:downloadRequest.httpMethodString URLString:downloadRequest.pd_URLString parameters:downloadRequest.pd_paramsDict error:nil];
+        NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:downloadRequest.httpMethodString URLString:downloadRequest.RB_URLString parameters:downloadRequest.RB_paramsDict error:nil];
         downloadRequest.downloadTask = [self.sessionManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
             [self setValuesForDownloadModel:downloadRequest withProgress:downloadProgress.fractionCompleted];
             if (downloadRequest.progerssBlock) {
@@ -446,12 +446,12 @@
             if (error) {
                 [self _cancelDownloadTaskWithDownloadModel:downloadRequest];
                 if (downloadRequest.completionBlock) {
-                     NSError *downError = [NSError errorWithDomain:PDNetworkRequestErrorDomain code:PDErrorCodeDownloadFailure description:@"下载失败"];
+                     NSError *downError = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeDownloadFailure description:@"下载失败"];
                      downloadRequest.completionBlock(downloadRequest,nil,downError);
                 }
                
             }else{
-                [self.downloadModelsDict removeObjectForKey:downloadRequest.pd_URLString];
+                [self.downloadModelsDict removeObjectForKey:downloadRequest.RB_URLString];
                 if (downloadRequest.completionBlock) {
                     downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
                 }
@@ -478,7 +478,7 @@
                    downloadRequest.completionBlock(downloadRequest,nil,error);
                 }
             }else{
-                [self.downloadModelsDict removeObjectForKey:downloadRequest.pd_URLString];
+                [self.downloadModelsDict removeObjectForKey:downloadRequest.RB_URLString];
                 if (downloadRequest.completionBlock) {
                     downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
                 }
@@ -494,7 +494,7 @@
     if (downloadModel.downloadTask) {
         downloadModel.downloadDate = [NSDate date];
         [downloadModel.downloadTask resume];
-        self.downloadModelsDict[downloadModel.pd_URLString] = downloadModel;
+        self.downloadModelsDict[downloadModel.RB_URLString] = downloadModel;
         [self.downloadingModels addObject:downloadModel];
     }
 }
@@ -510,7 +510,7 @@
                 [self saveTotalBytesExpectedToWriteWithDownloadModel:downloadModel];
                 if (isSuc) {
                     downloadModel.resumeData = nil;
-                    [self.downloadModelsDict removeObjectForKey:downloadModel.pd_URLString];
+                    [self.downloadModelsDict removeObjectForKey:downloadModel.RB_URLString];
                     [self.downloadingModels removeObject:downloadModel];
                 }
             }
@@ -573,7 +573,7 @@
     if (![[NSFileManager defaultManager] fileExistsAtPath:downloadPath]) {
         [[NSFileManager defaultManager] createDirectoryAtPath:downloadPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    return [downloadPath stringByAppendingPathComponent:@"PDDownloadManager.plist"];
+    return [downloadPath stringByAppendingPathComponent:@"RBDownloadManager.plist"];
 }
 
 -(nullable NSMutableDictionary <NSString *, NSString *> *)managerPlistDict{
@@ -583,13 +583,13 @@
 
 -(void)saveTotalBytesExpectedToWriteWithDownloadModel:(RBDownloadRequest *)downloadModel{
     NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
-    [dict setValue:[NSString stringWithFormat:@"%lld", downloadModel.downloadTask.countOfBytesExpectedToReceive] forKey:downloadModel.pd_URLString];
+    [dict setValue:[NSString stringWithFormat:@"%lld", downloadModel.downloadTask.countOfBytesExpectedToReceive] forKey:downloadModel.RB_URLString];
     [dict writeToFile:[self managerPlistFilePath] atomically:YES];
 }
 
 -(void)removeTotalBytesExpectedToWriteWhenDownloadFinishedWithDownloadModel:(RBDownloadRequest *)downloadModel{
     NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
-    [dict removeObjectForKey:downloadModel.pd_URLString];
+    [dict removeObjectForKey:downloadModel.RB_URLString];
     [dict writeToFile:[self managerPlistFilePath] atomically:YES];
 }
 

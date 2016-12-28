@@ -1,5 +1,5 @@
 //
-//  PDDownloadRequest.m
+//  RBDownloadRequest.m
 //  Pudding
 //
 //  Created by baxiang on 16/8/29.
@@ -10,8 +10,8 @@
 
 @implementation RBDownloadRequest
 
-+(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable PDRequestProgressBlock )progressBlock complete:(nullable PDRequestCompletionBlock) completionBlock{
-    RBDownloadRequest *downloadRequest = [[RBDownloadRequest alloc] initWithURLString:URL method:PDRequestMethodGet params:parametes];
++(void)downloadWithURL:(nonnull NSString*)URL parametes:(nullable NSDictionary*)parametes progress:(nullable RBRequestProgressBlock )progressBlock complete:(nullable RBRequestCompletionBlock) completionBlock{
+    RBDownloadRequest *downloadRequest = [[RBDownloadRequest alloc] initWithURLString:URL method:RBRequestMethodGet params:parametes];
     downloadRequest.progerssBlock = progressBlock;
     [downloadRequest startWithCompletionBlock:completionBlock];
 }

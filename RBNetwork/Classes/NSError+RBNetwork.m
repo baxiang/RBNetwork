@@ -1,16 +1,16 @@
 //
-//  NSError+PDNetwork.m
+//  NSError+RBNetwork.m
 //  Pudding
 //
 //  Created by baxiang on 16/9/1.
 //  Copyright © 2016年 Zhi Kuiyu. All rights reserved.
 //
 
-#import "NSError+PDNetwork.h"
+#import "NSError+RBNetwork.h"
 
-NSString * const PDNetworkRequestErrorDomain  = @"PDNetworkRequestErrorDomain";
+NSString * const RBNetworkRequestErrorDomain  = @"RBNetworkRequestErrorDomain";
 
-@implementation NSError (PDNetwork)
+@implementation NSError (RBNetwork)
 -(void)setErrorDescription:(NSString *)errorDescription{
 
 }
@@ -85,7 +85,7 @@ NSString * const PDNetworkRequestErrorDomain  = @"PDNetworkRequestErrorDomain";
 -(NSString*)errorDescription{
     if ([self.domain isEqualToString:NSURLErrorDomain]) {
         return [self URLErrorDescription];
-    }else if ([self.domain isEqualToString:PDNetworkRequestErrorDomain]){
+    }else if ([self.domain isEqualToString:RBNetworkRequestErrorDomain]){
         return self.localizedDescription == nil ? @"网络异常" : self.localizedDescription;
     }
     return self.localizedDescription == nil ? [NSString stringWithFormat:@"%@%zd",self.domain,self.code] : self.localizedDescription;
