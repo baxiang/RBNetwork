@@ -11,6 +11,8 @@
 @class RBNetworkResponse;
 #import "RBNetworkConfig.h"
 
+
+
 typedef NS_ENUM(NSUInteger, RBRequestState)
 {
     RBRequestStateWaiting = 0,
@@ -50,13 +52,46 @@ typedef void(^RBRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
  *  Timeout
  */
 @property (nonatomic, assign) NSTimeInterval requestTimeout;
+
+/**
+  parameters 请求参数
+ */
 @property (nonatomic,strong)  NSDictionary *requestParameters;
-@property (nonatomic, strong) NSURLSessionTask *sessionTask;
-@property (nonatomic, assign) RBRequestSerializerType  requestSerializer;
-@property (nonatomic, assign) RBResponseSerializerType responseSerializer;
-@property (nonatomic, copy)   NSDictionary<NSString *,NSString *>*  requestHeaders;
-//任务类型
+/**
+ <#Description#>
+ */
+@property (nonatomic, assign) RBRequestSerializerType  requestSerializerType;
+
+/**
+ <#Description#>
+ */
+@property (nonatomic, assign) RBResponseSerializerType responseSerializerType;
+
+/**
+ 请求头
+ */
+@property (nonatomic, copy)   NSDictionary<NSString *,NSString *>* requestHeaders;
+
+/**
+ 请求的类型 普通请求 上传请求 下载请求
+ */
 @property (nonatomic, assign) RBNetworkTaskType taskType;
+
+/**
+ 请求成功的回调
+ */
+@property (nonatomic, copy, readonly, nullable) RBSuccessBlock successBlock;
+
+/**
+ 请求失败的回调
+ */
+@property (nonatomic, copy, readonly, nullable) RBFailureBlock failureBlock;
+
+/**
+ 请求的进度回调
+ */
+@property (nonatomic, copy, readonly, nullable) RBProgressBlock progressBlock;
+
 /**
  *  请求的缓存策略
  */
@@ -65,26 +100,10 @@ typedef void(^RBRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
  *  是否是缓存数据
  */
 @property (nonatomic,  assign) BOOL isCacheData;
-#pragma mark - block
-/**
- *  成功的的block
- */
-@property (nonatomic,  copy) RBRequestCompletionBlock completionBlock;
 
-// 上传或者下载进度
-@property (nonatomic,  copy) RBRequestProgressBlock progerssBlock;
-// delegate
-@property (nonatomic, weak) id <RBRequestDelegate> delegate;
-/**
- *  网络请求的结果
- */
-@property (nonatomic,assign) RBRequestState requestState;
-//@property (nonatomic, strong) Class responseModelClass;
-@property (nonatomic, strong) NSString *responseCodeKey;
-@property (nonatomic, strong) NSString *responseMessageKey;
-@property (nonatomic, strong) NSString *responseContentDataKey;
+
 @property (nonatomic, readwrite, assign) NSInteger statusCode;
-@property (nonatomic, copy) NSIndexSet *acceptableStatusCodes;
+@property (nonatomic, copy)   NSIndexSet *acceptableStatusCodes;
 @property (nonatomic, assign) NSUInteger identifier;
 @property (nonatomic, strong, readwrite, nullable) id responseObject;
 @property (nonatomic, strong, readwrite, nullable) NSData *responseData;
@@ -96,7 +115,7 @@ typedef void(^RBRequestProgressBlock)(__kindof RBNetworkRequest *task,NSProgress
  *  结束任务
  */
 -(void)stop;
--(void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock;
+//-(void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock;
 
 -(instancetype)initWithURLString:(NSString *)URLString method:(RBRequestMethod)method params:(NSDictionary *)paramters;
 - (void)clearRequestBlock;

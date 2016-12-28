@@ -50,34 +50,6 @@
 }
 @end
 
-@interface NSObject(RBNetworkEngine)
-@property(nonatomic,strong)NSString * RB_URLString;
-@property(nonatomic,strong)NSDictionary *RB_paramsDict;
-@property (nonatomic, copy)NSString *RB_identifier;
-@end
-@implementation NSObject(RBNetworkEngine)
-
--(void)setRB_URLString:(NSString *)RB_URLString{
-  objc_setAssociatedObject(self, @selector(RB_URLString), RB_URLString, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
--(NSString *)RB_URLString{
-    return  objc_getAssociatedObject(self, _cmd);
-}
--(void)setRB_paramsDict:(NSDictionary *)RB_paramsDict{
-  objc_setAssociatedObject(self, @selector(RB_paramsDict), RB_paramsDict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
--(NSDictionary *)RB_paramsDict{
-  return  objc_getAssociatedObject(self, _cmd);
-}
-
--(void)setRB_identifier:(NSString *)RB_identifier{
-   objc_setAssociatedObject(self, @selector(RB_identifier), RB_identifier, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
--(NSString *)RB_identifier{
-  return  objc_getAssociatedObject(self, _cmd);
-}
-
-@end
 
 #define Lock() pthread_mutex_lock(&_lock)
 #define Unlock() pthread_mutex_unlock(&_lock)
@@ -132,16 +104,16 @@
 #pragma mark network config 请求配置
 
 - (AFHTTPRequestSerializer *)requestSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask{
-    if (requestTask.requestSerializer == RBRequestSerializerTypeHTTP) {
+    if (requestTask.requestSerializerType == RBRequestSerializerTypeHTTP) {
         return  [AFHTTPRequestSerializer serializer];
-    } else if(requestTask.requestSerializer == RBRequestSerializerTypeJSON) {
+    } else if(requestTask.requestSerializerType == RBRequestSerializerTypeJSON) {
         return  [AFJSONRequestSerializer serializer];
     }
 }
 - (AFHTTPResponseSerializer *)responseSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask {
-    if (requestTask.responseSerializer == RBResponseSerializerTypeHTTP) {
+    if (requestTask.responseSerializerType == RBResponseSerializerTypeHTTP) {
         return self.sessionManager.responseSerializer;
-    } else if (requestTask.responseSerializer == RBResponseSerializerTypeJSON) {
+    } else if (requestTask.responseSerializerType == RBResponseSerializerTypeJSON) {
         return [AFJSONResponseSerializer serializer];
     }
 }
@@ -181,62 +153,70 @@
     }];
 }
 
--(NSString*)identifierByRequest:(__kindof RBNetworkRequest *)request{
-    NSData *data = [NSJSONSerialization dataWithJSONObject:request.RB_paramsDict options:NSJSONWritingPrettyPrinted error:nil];
-    NSString *paramString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSString *cacheKey = [NSString stringWithFormat:@"%@%@%@",request.httpMethodString,request.RB_URLString,paramString];
-    return [RBNetworkUtilities md5String:cacheKey];
-}
-- (void)setupSessionManagerRequestSerializerByRequest:(__kindof RBNetworkRequest *)request {
-    //配置requestSerializerType
-    self.sessionManager.requestSerializer = request.requestSerializer == RBRequestSerializerTypeHTTP ? [AFHTTPRequestSerializer serializer] : [AFJSONRequestSerializer serializer];
-    self.sessionManager.responseSerializer = request.responseSerializer == RBResponseSerializerTypeHTTP ? [AFHTTPResponseSerializer serializer] : [AFJSONResponseSerializer serializer];
-    //配置请求头
-    NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].baseRequestHeaders;
-    [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        [self.sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-    }];
-    NSDictionary *requestHeaders = request.requestHeaders ;
-    [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        [self.sessionManager.requestSerializer setValue:obj forHTTPHeaderField:key];
-    }];
-    //配置请求超时时间
-    self.sessionManager.requestSerializer.timeoutInterval = request.requestTimeout;
-    self.sessionManager.responseSerializer.acceptableContentTypes  =  [RBNetworkConfig defaultConfig].acceptableContentTypes;
-}
-
-
--(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(RBRequestCompletionBlock)completionBlock;{
-    RBNetworkRequest *request = [[[RBNetworkRequest class] alloc] initWithURLString:URLString method:RBRequestMethodPost params:paramters];
-    [request startWithCompletionBlock:completionBlock];
+- (AFJSONResponseSerializer *)jsonResponseSerializer {
+    if (!_jsonResponseSerializer) {
+        _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
+    }
+    return _jsonResponseSerializer;
 }
 
 - (void)executeRequestTask:(RBNetworkRequest *)request{
-    request.RB_URLString = [self urlStringByRequest:request];
-    request.RB_paramsDict = [self requestParamByRequest:request];
-    request.RB_identifier = [self identifierByRequest:request];
-    [self setupSessionManagerRequestSerializerByRequest:request];
     if (![self networkReachability]) {
         NSError *error =[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorNotConnectedToInternet description:@"网络连接失败"];
-        if (request.completionBlock) {
-             request.completionBlock(request,nil,error);
+        if (request.failureBlock) {
+             request.failureBlock(error);
         }
         return;
-    }
-    if ([RBNetworkConfig defaultConfig].enableDebug) {
-        [RBNetworkLogger logDebugRequestInfoWithURL:request.RB_URLString  methodName:request.httpMethodString params:request.RB_paramsDict reachabilityStatus:[[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus]];
     }
     NSIndexSet *acceptableStatusCodes = request.acceptableStatusCodes ?: [RBNetworkConfig defaultConfig].defaultAcceptableStatusCodes;
     if (acceptableStatusCodes) {
         self.sessionManager.responseSerializer.acceptableStatusCodes = acceptableStatusCodes;
     }
     if ([request isKindOfClass:[RBDownloadRequest class]]) {
-        [self _startDownloadTask:(RBDownloadRequest*)request];
+        //[self _startDownloadTask:(RBDownloadRequest*)request];
     }else if ([request isKindOfClass:[RBUploadRequest class]]){
         [self _startUploadTask:(RBUploadRequest*)request];
     }else{
         [self _startDefaultTask:request];
     }
+}
+- (void)xm_processRequest:(RBNetworkRequest *)request
+               onProgress:(RBProgressBlock)progressBlock
+                onSuccess:(RBSuccessBlock)successBlock
+                onFailure:(RBFailureBlock)failureBlock
+               onFinished:(RBFinishedBlock)finishedBlock {
+    
+    // set callback blocks for the request object.
+    if (successBlock) {
+        [request setValue:successBlock forKey:@"_successBlock"];
+    }
+    if (failureBlock) {
+        [request setValue:failureBlock forKey:@"_failureBlock"];
+    }
+    if (finishedBlock) {
+        [request setValue:finishedBlock forKey:@"_finishedBlock"];
+    }
+//    if (progressBlock && request.requestType != kXMRequestNormal) {
+//        [request setValue:progressBlock forKey:@"_progressBlock"];
+//    }
+}
++ (NSUInteger)sendRequest:(RBConstructBlock)configBlock
+                onSuccess:(nullable RBSuccessBlock)successBlock
+                onFailure:(nullable RBFailureBlock)failureBlock{
+   return [[RBNetworkEngine defaultEngine] sendRequest:configBlock onProgress:nil onSuccess:successBlock onFailure:failureBlock onFinished:nil];
+
+}
+- (NSUInteger)sendRequest:(RBConstructBlock)configBlock
+               onProgress:(nullable RBProgressBlock)progressBlock
+                onSuccess:(nullable RBSuccessBlock)successBlock
+                onFailure:(nullable RBFailureBlock)failureBlock
+               onFinished:(nullable RBFinishedBlock)finishedBlock {
+    RBNetworkRequest *request = [RBNetworkRequest new];
+    if (configBlock) {
+        configBlock(request);
+    }
+    [self xm_processRequest:request onProgress:progressBlock onSuccess:successBlock onFailure:failureBlock onFinished:finishedBlock];
+    [self _startDefaultTask:request];
 }
 
 -(NSUInteger)_startDefaultTask:(RBNetworkRequest *)requestTask{
@@ -246,12 +226,15 @@
     NSError *serializationError = nil;
     NSMutableURLRequest *request = [requestSerializer requestWithMethod:requestTask.httpMethodString URLString:urlStr parameters:paramsDict error:&serializationError];
     if (serializationError) {
-            if (requestTask.completionBlock) {
-                requestTask.completionBlock(requestTask,nil,serializationError);
+            if (requestTask.failureBlock) {
+                requestTask.failureBlock(serializationError);
             }
             return 0;
         }
     [self constructionURLRequest:request ByRequestTask:requestTask];
+    if ([RBNetworkConfig defaultConfig].enableDebug) {
+        [RBNetworkLogger logDebugRequestInfoWithURL:urlStr  methodName:requestTask.httpMethodString params:paramsDict reachabilityStatus:[[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus]];
+    }
     __block NSURLSessionDataTask *dataTask = nil;
     __weak __typeof(self)weakSelf = self;
     dataTask = [self.sessionManager dataTaskWithRequest:request
@@ -277,7 +260,7 @@
         request.responseData = responseObject;
 //        request.responseString = [[NSString alloc] initWithData:responseObject encoding:[YTKNetworkUtils stringEncodingWithRequest:request]];
        
-        switch (request.responseSerializer) {
+        switch (request.responseSerializerType) {
             case RBResponseSerializerTypeHTTP:
                 // Default serializer. Do nothing.
                 break;
@@ -324,26 +307,17 @@
 //        if (request.delegate != nil) {
 //            [request.delegate requestFinished:request];
 //        }
-        if(request.completionBlock) {
-            request.isCacheData = NO;
-            //id  jsonData =[response valueForKeyPath:request.responseContentDataKey];
-            request.completionBlock(request,nil,nil);
+        if (request.successBlock) {
+            request.successBlock(request.responseObject);
         }
         //[request toggleAccessoriesDidStopCallBack];
     });
 }
 
-- (AFJSONResponseSerializer *)jsonResponseSerializer {
-    if (!_jsonResponseSerializer) {
-        _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
-        //_jsonResponseSerializer.acceptableStatusCodes = _allStatusCodes;
-        
-    }
-    return _jsonResponseSerializer;
-}
+
 
 - (void)cancelTask:(RBNetworkRequest *)requestTask{
-    [requestTask.sessionTask cancel];
+    //[requestTask.sessionTask cancel];
     [self removeRequestObject:requestTask];
     [requestTask clearRequestBlock];
 }
@@ -353,24 +327,48 @@
        [self cancelTask:requestTask];
    }];
 }
-#pragma mark 普通请求
+#pragma mark upload
 
 - (void)_startUploadTask:(RBUploadRequest *)uploadTask{
-        NSError *error = nil;
-        NSMutableURLRequest *request =  [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.RB_URLString parameters:uploadTask.RB_paramsDict constructingBodyWithBlock:uploadTask.constructingBodyBlock error:&error];
-      if (error) {
+       AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:uploadTask];
+       NSString*urlStr = [self urlStringByRequest:uploadTask];
+       NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
+      __block NSError *serializationError = nil;
+   NSMutableURLRequest *request = [requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:urlStr parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+       [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
+           if (obj.fileData) {
+               if (obj.fileName && obj.mimeType) {
+                   [formData appendPartWithFileData:obj.fileData name:obj.name fileName:obj.fileName mimeType:obj.mimeType];
+               } else {
+                   [formData appendPartWithFormData:obj.fileData name:obj.name];
+               }
+           } else if (obj.fileURL) {
+               NSError *fileError = nil;
+               if (obj.fileName && obj.mimeType) {
+                   [formData appendPartWithFileURL:obj.fileURL name:obj.name fileName:obj.fileName mimeType:obj.mimeType error:&fileError];
+               } else {
+                   [formData appendPartWithFileURL:obj.fileURL name:obj.name error:&fileError];
+               }
+               if (fileError) {
+                   serializationError = fileError;
+                   *stop = YES;
+               }
+           }
+       }];
+    } error:&serializationError];
+      if (serializationError) {
         NSError *error =[NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestSendFailure description:@"上传文件失败"];
-        if (uploadTask.completionBlock) {
-            uploadTask.completionBlock(uploadTask,nil,error);
+        if (uploadTask.failureBlock) {
+            uploadTask.failureBlock(error);
         }
           return;
        }
         request.timeoutInterval = uploadTask.requestTimeout;
         __block  NSURLSessionUploadTask *uploadDataTask = nil;
           uploadDataTask = [self.sessionManager uploadTaskWithStreamedRequest:request  progress:^(NSProgress *progress){
-                if (uploadTask.progerssBlock) {
+                if (uploadTask.progressBlock) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        uploadTask.progerssBlock(uploadTask,progress);
+                        uploadTask.progressBlock(progress);
                     });
                 }
             }completionHandler:^(NSURLResponse * _Nonnull response, id  _Nonnull responseObject, NSError * _Nonnull error){
@@ -380,8 +378,7 @@
                     [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
                 }
             }];
-            uploadDataTask.RB_identifier = [NSString stringWithFormat:@"%@",uploadTask.RB_identifier];
-            uploadTask.sessionTask = uploadDataTask;
+            //uploadTask.sessionTask = uploadDataTask;
             [uploadDataTask resume];
             [self addRequestObject:uploadTask];
     
@@ -404,193 +401,194 @@
     RBNetworkRequest  *request = _requestRecordDict[@(sessionTask.taskIdentifier)];
     request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
-    if(request.completionBlock) {
+    if(request.successBlock) {
         request.isCacheData = NO;
         //id  jsonData =[response valueForKeyPath:request.responseContentDataKey];
-        request.completionBlock(request,response,nil);
+        request.successBlock(response);
     }
 }
 - (void)handleRequestFailure:(NSURLSessionTask *)sessionTask responseObject:responseObject error:(NSError *)error {
-    RBNetworkRequest  *request = _requestRecordDict[sessionTask.RB_identifier];
+    RBNetworkRequest  *request = _requestRecordDict[@(sessionTask.taskIdentifier)];
     request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
     [self removeRequestObject:request];
-    
-    if (request.completionBlock) {
-        request.completionBlock(request,nil,error);
+    if (request.failureBlock) {
+        request.failureBlock(error);
     }
     
 }
 
 #pragma mark download
--(void)_startDownloadTask:(RBDownloadRequest *)downloadRequest{
-    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.filePath]) {
-        if (downloadRequest.completionBlock) {
-             downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
-        }
-        return ;
-    }
-    downloadRequest.resumeData = [NSData dataWithContentsOfFile:downloadRequest.resumeFilePath];
-    if (downloadRequest.resumeData.length == 0) {
-        NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:downloadRequest.httpMethodString URLString:downloadRequest.RB_URLString parameters:downloadRequest.RB_paramsDict error:nil];
-        downloadRequest.downloadTask = [self.sessionManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
-            [self setValuesForDownloadModel:downloadRequest withProgress:downloadProgress.fractionCompleted];
-            if (downloadRequest.progerssBlock) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    downloadRequest.progerssBlock(downloadRequest,downloadProgress);
-                });
-                
-            }
-        } destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-            return [NSURL fileURLWithPath:downloadRequest.filePath];
-        } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
-            if (error) {
-                [self _cancelDownloadTaskWithDownloadModel:downloadRequest];
-                if (downloadRequest.completionBlock) {
-                     NSError *downError = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeDownloadFailure description:@"下载失败"];
-                     downloadRequest.completionBlock(downloadRequest,nil,downError);
-                }
-               
-            }else{
-                [self.downloadModelsDict removeObjectForKey:downloadRequest.RB_URLString];
-                if (downloadRequest.completionBlock) {
-                    downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
-                }
-                [self deletePlistFileWithDownloadModel:downloadRequest];
-            }
-        }];
-        
-    }else{
-        
-        downloadRequest.totalBytesWritten = [self getResumeByteWithDownloadModel:downloadRequest];
-        downloadRequest.downloadTask = [self.sessionManager downloadTaskWithResumeData:downloadRequest.resumeData progress:^(NSProgress * _Nonnull downloadProgress) {
-            [self setValuesForDownloadModel:downloadRequest withProgress:[self.sessionManager downloadProgressForTask:downloadRequest.downloadTask].fractionCompleted];if (downloadRequest.progerssBlock) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    downloadRequest.progerssBlock(downloadRequest,downloadProgress);
-                });
-            } downloadRequest.progerssBlock(downloadRequest,downloadProgress);
-            
-        } destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-            return [NSURL fileURLWithPath:downloadRequest.filePath];
-        } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
-            if (error) {
-                [self _cancelDownloadTaskWithDownloadModel:downloadRequest];
-                if (downloadRequest.completionBlock) {
-                   downloadRequest.completionBlock(downloadRequest,nil,error);
-                }
-            }else{
-                [self.downloadModelsDict removeObjectForKey:downloadRequest.RB_URLString];
-                if (downloadRequest.completionBlock) {
-                    downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
-                }
-                
-                [self deletePlistFileWithDownloadModel:downloadRequest];
-            }
-        }];
-    }
-    [self _resumeDownloadWithDownloadModel:downloadRequest];
-}
-
--(void)_resumeDownloadWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    if (downloadModel.downloadTask) {
-        downloadModel.downloadDate = [NSDate date];
-        [downloadModel.downloadTask resume];
-        self.downloadModelsDict[downloadModel.RB_URLString] = downloadModel;
-        [self.downloadingModels addObject:downloadModel];
-    }
-}
-
--(void)_cancelDownloadTaskWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    if (!downloadModel) return;
-    NSURLSessionTaskState state = downloadModel.downloadTask.state;
-    if (state == NSURLSessionTaskStateRunning) {
-        [downloadModel.downloadTask cancelByProducingResumeData:^(NSData * _Nullable resumeData) {
-            downloadModel.resumeData = resumeData;
-            @synchronized (self) {
-                BOOL isSuc = [downloadModel.resumeData writeToFile:downloadModel.resumeFilePath atomically:YES];
-                [self saveTotalBytesExpectedToWriteWithDownloadModel:downloadModel];
-                if (isSuc) {
-                    downloadModel.resumeData = nil;
-                    [self.downloadModelsDict removeObjectForKey:downloadModel.RB_URLString];
-                    [self.downloadingModels removeObject:downloadModel];
-                }
-            }
-        }];
-    }
-}
-
-
--(RBDownloadRequest *)_getDownloadingModelWithURLString:(NSString *)URLString{
-    return self.downloadModelsDict[URLString];
-}
-
-#pragma mark - private methods
-
--(void)setValuesForDownloadModel:(RBDownloadRequest *)downloadModel withProgress:(double)progress{
-    NSTimeInterval interval = -1 * [downloadModel.downloadDate timeIntervalSinceNow];
-    downloadModel.totalBytesWritten = downloadModel.downloadTask.countOfBytesReceived;
-    downloadModel.totalBytesExpectedToWrite = downloadModel.downloadTask.countOfBytesExpectedToReceive;
-    downloadModel.downloadProgress = progress;
-    downloadModel.downloadSpeed = (int64_t)((downloadModel.totalBytesWritten - [self getResumeByteWithDownloadModel:downloadModel]) / interval);
-    if (downloadModel.downloadSpeed != 0) {
-        int64_t remainingContentLength = downloadModel.totalBytesExpectedToWrite  - downloadModel.totalBytesWritten;
-        int currentLeftTime = (int)(remainingContentLength / downloadModel.downloadSpeed);
-        downloadModel.downloadLeft = currentLeftTime;
-    }
-}
-
--(int64_t)getResumeByteWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    int64_t resumeBytes = 0;
-    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:downloadModel.resumeFilePath];
-    if (dict) {
-        resumeBytes = [dict[@"NSURLSessionResumeBytesReceived"] longLongValue];
-    }
-    return resumeBytes;
-}
-
--(NSString *)getTmpFileNameWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    NSString *fileName = nil;
-    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:downloadModel.resumeFilePath];
-    if (dict) {
-        fileName = dict[@"NSURLSessionResumeInfoTempFileName"];
-    }
-    return fileName;
-}
-
--(void)createFolderAtPath:(NSString *)path{
-    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) return;
-    [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
-}
-
--(void)deletePlistFileWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    if (downloadModel.downloadTask.countOfBytesReceived == downloadModel.downloadTask.countOfBytesExpectedToReceive) {
-        [[NSFileManager defaultManager] removeItemAtPath:downloadModel.resumeFilePath error:nil];
-        [self removeTotalBytesExpectedToWriteWhenDownloadFinishedWithDownloadModel:downloadModel];
-    }
-}
-
--(NSString *)managerPlistFilePath{
-    NSString *downloadPath =[RBNetworkConfig defaultConfig].downloadFolderPath;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:downloadPath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:downloadPath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    return [downloadPath stringByAppendingPathComponent:@"RBDownloadManager.plist"];
-}
-
--(nullable NSMutableDictionary <NSString *, NSString *> *)managerPlistDict{
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithContentsOfFile:[self managerPlistFilePath]];
-    return dict;
-}
-
--(void)saveTotalBytesExpectedToWriteWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
-    [dict setValue:[NSString stringWithFormat:@"%lld", downloadModel.downloadTask.countOfBytesExpectedToReceive] forKey:downloadModel.RB_URLString];
-    [dict writeToFile:[self managerPlistFilePath] atomically:YES];
-}
-
--(void)removeTotalBytesExpectedToWriteWhenDownloadFinishedWithDownloadModel:(RBDownloadRequest *)downloadModel{
-    NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
-    [dict removeObjectForKey:downloadModel.RB_URLString];
-    [dict writeToFile:[self managerPlistFilePath] atomically:YES];
-}
+//-(void)_startDownloadTask:(RBDownloadRequest *)downloadRequest{
+//    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.filePath]) {
+//        if (downloadRequest.completionBlock) {
+//             downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
+//        }
+//        return ;
+//    }
+//    //NSString*urlStr = [self urlStringByRequest:downloadRequest];
+//    NSDictionary*paramsDict = [self requestParamByRequest:downloadRequest];
+//    downloadRequest.resumeData = [NSData dataWithContentsOfFile:downloadRequest.resumeFilePath];
+//    if (downloadRequest.resumeData.length == 0) {
+//        NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:downloadRequest.httpMethodString URLString:urlStr parameters:paramsDict error:nil];
+//        downloadRequest.downloadTask = [self.sessionManager downloadTaskWithRequest:request progress:^(NSProgress * _Nonnull downloadProgress) {
+//            [self setValuesForDownloadModel:downloadRequest withProgress:downloadProgress.fractionCompleted];
+//            if (downloadRequest.progerssBlock) {
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    downloadRequest.progerssBlock(downloadRequest,downloadProgress);
+//                });
+//                
+//            }
+//        } destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+//            return [NSURL fileURLWithPath:downloadRequest.filePath];
+//        } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+//            if (error) {
+//                [self _cancelDownloadTaskWithDownloadModel:downloadRequest];
+//                if (downloadRequest.completionBlock) {
+//                     NSError *downError = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeDownloadFailure description:@"下载失败"];
+//                     downloadRequest.completionBlock(downloadRequest,nil,downError);
+//                }
+//               
+//            }else{
+//                [self.downloadModelsDict removeObjectForKey:urlStr];
+//                if (downloadRequest.completionBlock) {
+//                    downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
+//                }
+//                [self deletePlistFileWithDownloadModel:downloadRequest];
+//            }
+//        }];
+//        
+//    }else{
+//        
+//        downloadRequest.totalBytesWritten = [self getResumeByteWithDownloadModel:downloadRequest];
+//        downloadRequest.downloadTask = [self.sessionManager downloadTaskWithResumeData:downloadRequest.resumeData progress:^(NSProgress * _Nonnull downloadProgress) {
+//            [self setValuesForDownloadModel:downloadRequest withProgress:[self.sessionManager downloadProgressForTask:downloadRequest.downloadTask].fractionCompleted];if (downloadRequest.progerssBlock) {
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    downloadRequest.progerssBlock(downloadRequest,downloadProgress);
+//                });
+//            } downloadRequest.progerssBlock(downloadRequest,downloadProgress);
+//            
+//        } destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+//            return [NSURL fileURLWithPath:downloadRequest.filePath];
+//        } completionHandler:^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+//            if (error) {
+//                [self _cancelDownloadTaskWithDownloadModel:downloadRequest];
+//                if (downloadRequest.completionBlock) {
+//                   downloadRequest.completionBlock(downloadRequest,nil,error);
+//                }
+//            }else{
+//                [self.downloadModelsDict removeObjectForKey:urlStr];
+//                if (downloadRequest.completionBlock) {
+//                    downloadRequest.completionBlock(downloadRequest,[NSURL fileURLWithPath:downloadRequest.filePath],nil);
+//                }
+//                
+//                [self deletePlistFileWithDownloadModel:downloadRequest];
+//            }
+//        }];
+//    }
+//    [self _resumeDownloadWithDownloadModel:downloadRequest];
+//}
+//
+//-(void)_resumeDownloadWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    if (downloadModel.downloadTask) {
+//        downloadModel.downloadDate = [NSDate date];
+//        [downloadModel.downloadTask resume];
+//        self.downloadModelsDict[downloadModel.RB_URLString] = downloadModel;
+//        [self.downloadingModels addObject:downloadModel];
+//    }
+//}
+//
+//-(void)_cancelDownloadTaskWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    if (!downloadModel) return;
+//    NSURLSessionTaskState state = downloadModel.downloadTask.state;
+//    if (state == NSURLSessionTaskStateRunning) {
+//        [downloadModel.downloadTask cancelByProducingResumeData:^(NSData * _Nullable resumeData) {
+//            downloadModel.resumeData = resumeData;
+//            @synchronized (self) {
+//                BOOL isSuc = [downloadModel.resumeData writeToFile:downloadModel.resumeFilePath atomically:YES];
+//                [self saveTotalBytesExpectedToWriteWithDownloadModel:downloadModel];
+//                if (isSuc) {
+//                    downloadModel.resumeData = nil;
+//                    [self.downloadModelsDict removeObjectForKey:downloadModel.RB_URLString];
+//                    [self.downloadingModels removeObject:downloadModel];
+//                }
+//            }
+//        }];
+//    }
+//}
+//
+//
+//-(RBDownloadRequest *)_getDownloadingModelWithURLString:(NSString *)URLString{
+//    return self.downloadModelsDict[URLString];
+//}
+//
+//#pragma mark - private methods
+//
+//-(void)setValuesForDownloadModel:(RBDownloadRequest *)downloadModel withProgress:(double)progress{
+//    NSTimeInterval interval = -1 * [downloadModel.downloadDate timeIntervalSinceNow];
+//    downloadModel.totalBytesWritten = downloadModel.downloadTask.countOfBytesReceived;
+//    downloadModel.totalBytesExpectedToWrite = downloadModel.downloadTask.countOfBytesExpectedToReceive;
+//    downloadModel.downloadProgress = progress;
+//    downloadModel.downloadSpeed = (int64_t)((downloadModel.totalBytesWritten - [self getResumeByteWithDownloadModel:downloadModel]) / interval);
+//    if (downloadModel.downloadSpeed != 0) {
+//        int64_t remainingContentLength = downloadModel.totalBytesExpectedToWrite  - downloadModel.totalBytesWritten;
+//        int currentLeftTime = (int)(remainingContentLength / downloadModel.downloadSpeed);
+//        downloadModel.downloadLeft = currentLeftTime;
+//    }
+//}
+//
+//-(int64_t)getResumeByteWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    int64_t resumeBytes = 0;
+//    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:downloadModel.resumeFilePath];
+//    if (dict) {
+//        resumeBytes = [dict[@"NSURLSessionResumeBytesReceived"] longLongValue];
+//    }
+//    return resumeBytes;
+//}
+//
+//-(NSString *)getTmpFileNameWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    NSString *fileName = nil;
+//    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:downloadModel.resumeFilePath];
+//    if (dict) {
+//        fileName = dict[@"NSURLSessionResumeInfoTempFileName"];
+//    }
+//    return fileName;
+//}
+//
+//-(void)createFolderAtPath:(NSString *)path{
+//    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) return;
+//    [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+//}
+//
+//-(void)deletePlistFileWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    if (downloadModel.downloadTask.countOfBytesReceived == downloadModel.downloadTask.countOfBytesExpectedToReceive) {
+//        [[NSFileManager defaultManager] removeItemAtPath:downloadModel.resumeFilePath error:nil];
+//        [self removeTotalBytesExpectedToWriteWhenDownloadFinishedWithDownloadModel:downloadModel];
+//    }
+//}
+//
+//-(NSString *)managerPlistFilePath{
+//    NSString *downloadPath =[RBNetworkConfig defaultConfig].downloadFolderPath;
+//    if (![[NSFileManager defaultManager] fileExistsAtPath:downloadPath]) {
+//        [[NSFileManager defaultManager] createDirectoryAtPath:downloadPath withIntermediateDirectories:YES attributes:nil error:nil];
+//    }
+//    return [downloadPath stringByAppendingPathComponent:@"RBDownloadManager.plist"];
+//}
+//
+//-(nullable NSMutableDictionary <NSString *, NSString *> *)managerPlistDict{
+//    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithContentsOfFile:[self managerPlistFilePath]];
+//    return dict;
+//}
+//
+//-(void)saveTotalBytesExpectedToWriteWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
+//    [dict setValue:[NSString stringWithFormat:@"%lld", downloadModel.downloadTask.countOfBytesExpectedToReceive] forKey:downloadModel.RB_URLString];
+//    [dict writeToFile:[self managerPlistFilePath] atomically:YES];
+//}
+//
+//-(void)removeTotalBytesExpectedToWriteWhenDownloadFinishedWithDownloadModel:(RBDownloadRequest *)downloadModel{
+//    NSMutableDictionary <NSString *, NSString *> *dict = [self managerPlistDict];
+//    [dict removeObjectForKey:downloadModel.RB_URLString];
+//    [dict writeToFile:[self managerPlistFilePath] atomically:YES];
+//}
 
 @end

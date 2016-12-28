@@ -38,20 +38,62 @@
     UITableViewCell *cell =  [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([UITableViewCell class])];
     if (indexPath.row==0) {
        cell.textLabel.text = @"GET请求";
+    }else if (indexPath.row ==1){
+       cell.textLabel.text = @"POST请求";
+    }else if (indexPath.row ==2){
+        cell.textLabel.text = @"upload请求";
     }
     return cell;
 }
 -(void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    if (indexPath.row==0) {
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    if (indexPath.row == 0) {
         [self fetchPublicTimeline];
+    }if (indexPath.row == 1) {
+        [self postWeiboTimeLine];
+    }if (indexPath.row == 2) {
+        [self uploadWeiboPhoto];
     }
 }
 -(void)fetchPublicTimeline{
-   
-    RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"/statuses/public_timeline.json" method:RBRequestMethodGet params:@{@"access_token":_weiboToken}];
-    [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
-        NSLog(@"%@",requestTask.responseObject);
+    [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
+        request.requestURL = @"/statuses/public_timeline.json";
+        request.requestMethod = RBRequestMethodGet;
+        request.requestParameters = @{@"access_token":_weiboToken};
+    } onSuccess:^(id responseObject) {
+        NSLog(@"%@",responseObject);
+    } onFailure:^(NSError * _Nullable error) {
+        NSLog(@"%@",error);
     }];
+    
+}
+-(void)postWeiboTimeLine{
+    [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
+        request.requestURL = @"/statuses/public_timeline.json";
+        request.requestMethod = RBRequestMethodGet;
+        request.requestParameters = @{@"access_token":_weiboToken};
+    } onSuccess:^(id responseObject) {
+        NSLog(@"%@",responseObject);
+    } onFailure:^(NSError * _Nullable error) {
+        NSLog(@"%@",error);
+    }];
+    
+//    RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"/statuses/update.json" method:RBRequestMethodPost params:@{@"access_token":_weiboToken,@"status":@"微博开发测试"}];
+//    [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
+//        NSLog(@"%@",requestTask.responseObject);
+//    }];
+}
+-(void)uploadWeiboPhoto{
+    NSMutableDictionary *paraDict = [NSMutableDictionary dictionary];
+    [paraDict setObject:[NSString stringWithFormat:@"%@",_weiboToken] forKey:@"access_token"];
+    [paraDict setObject:@"测试图片微博" forKey:@"status"];
+    RBUploadRequest *request = [[RBUploadRequest alloc] initWithURLString:@"/statuses/upload.json" method:RBRequestMethodPost params:paraDict];
+    NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
+    [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
+//    [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
+//        NSLog(@"%@---%@",response,error);
+//    }];
+
 }
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if (alertView.cancelButtonIndex!= buttonIndex) {

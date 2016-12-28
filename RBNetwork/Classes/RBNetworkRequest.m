@@ -22,18 +22,17 @@
         _requestMethod = method;
         _requestParameters = paramters;
         self.requestTimeout = [RBNetworkConfig defaultConfig].defaultTimeoutInterval;
-        self.requestSerializer = [RBNetworkConfig defaultConfig].defaultRequestSerializer;
-        self.responseSerializer = [RBNetworkConfig defaultConfig].defaultResponseSerializer;
-        self.requestState = RBRequestStateWaiting;
+        self.requestSerializerType = [RBNetworkConfig defaultConfig].defaultRequestSerializer;
+        self.responseSerializerType = [RBNetworkConfig defaultConfig].defaultResponseSerializer;
     }
     return self;
  
 }
 
 - (void)requestWillStartTag {
-    if ([self.delegate respondsToSelector:@selector(requestWillStart:)]) {
-        [self.delegate requestWillStart:self];
-    }
+//    if ([self.delegate respondsToSelector:@selector(requestWillStart:)]) {
+//        [self.delegate requestWillStart:self];
+//    }
 }
 - (void)start {
     [self requestWillStartTag];
@@ -43,7 +42,7 @@
     [[RBNetworkEngine defaultEngine] cancelTask:self];
 }
 - (void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock{
-    self.completionBlock = completionBlock;
+    //self.completionBlock = completionBlock;
     [self start];
 }
 
@@ -78,35 +77,15 @@
     }
     return method;
 }
--(RBRequestState)requestState{
-    if (!self.sessionTask) {
-        return RBRequestStateWaiting;
-    }
-    NSURLSessionTaskState currState = self.sessionTask.state;
-    switch (currState) {
-        case NSURLSessionTaskStateRunning:
-            return RBRequestStateRunning;
-            break;
-        case NSURLSessionTaskStateSuspended:
-            return RBRequestStateSuspended;
-            break;
-        case NSURLSessionTaskStateCanceling:
-            return RBRequestStateCanceling;
-            break;
-        case NSURLSessionTaskStateCompleted:
-            return RBRequestStateCompleted;
-            break;
-        default:
-            break;
-    }
-}
+
+
 - (void)clearRequestBlock {
-    self.completionBlock = nil;
-    self.progerssBlock = nil;
+    //self.completionBlock = nil;
+    //self.progerssBlock = nil;
 }
 -(void)dealloc{
     NSLog(@"请求销毁%@",self.class);
    [self clearRequestBlock];
-    _delegate = nil;
+    //_delegate = nil;
 }
 @end

@@ -9,12 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "RBNetworkRequest.h"
 #import "RBDownloadRequest.h"
+
 @interface RBNetworkEngine : NSObject
 + (RBNetworkEngine *)defaultEngine;
 - (void)executeRequestTask:(RBNetworkRequest *)request;
 - (void)cancelTask:(RBNetworkRequest *)httpTask;
 - (void)cancelAllTask;
-
-
--(void)POST:(NSString*)URLString parameters:(NSDictionary*)paramters CompletionBlock:(RBRequestCompletionBlock)completionBlock;
++ (NSUInteger)sendRequest:(RBConstructBlock)configBlock
+                onSuccess:(nullable RBSuccessBlock)successBlock
+                onFailure:(nullable RBFailureBlock)failureBlock;
 @end

@@ -8,8 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-UIKIT_EXTERN NSString * RBNetConfig_Msg_List;     //消息中心列表
-UIKIT_EXTERN NSString * RBNetConfig_Family_List;  //家庭动态列表
+@class RBNetworkRequest;
 
 #if DEBUG
 #define  RBNetworkAssert(condition,fmt,...) \
@@ -57,6 +56,12 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityDefault = 0,
     RBRequestPriorityHigh = 4,
 };
+
+typedef void (^RBConstructBlock)(RBNetworkRequest *request);
+typedef void (^RBProgressBlock)(NSProgress *progress);
+typedef void (^RBSuccessBlock)(id _Nullable responseObject);
+typedef void (^RBFailureBlock)(NSError * _Nullable error);
+typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable error);
 
 @interface RBNetworkConfig : NSObject
 
