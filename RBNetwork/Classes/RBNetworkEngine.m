@@ -93,6 +93,7 @@
         _downloadModelsDict = [[NSMutableDictionary alloc] initWithCapacity:1];
         [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
         
+        //_sessionManager.requestSerializer.acceptableContentTypes =[RBNetworkConfig defaultConfig].acceptableContentTypes;
     }
     return self;
 }
@@ -156,6 +157,7 @@
 - (AFJSONResponseSerializer *)jsonResponseSerializer {
     if (!_jsonResponseSerializer) {
         _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
+        _jsonResponseSerializer.acceptableContentTypes = [RBNetworkConfig defaultConfig].acceptableContentTypes;
     }
     return _jsonResponseSerializer;
 }
@@ -180,11 +182,10 @@
         [self _startDefaultTask:request];
     }
 }
-- (void)xm_processRequest:(RBNetworkRequest *)request
++ (void)constructRequest:(RBNetworkRequest *)request
                onProgress:(RBProgressBlock)progressBlock
                 onSuccess:(RBSuccessBlock)successBlock
-                onFailure:(RBFailureBlock)failureBlock
-               onFinished:(RBFinishedBlock)finishedBlock {
+                onFailure:(RBFailureBlock)failureBlock{
     
     // set callback blocks for the request object.
     if (successBlock) {
@@ -193,30 +194,38 @@
     if (failureBlock) {
         [request setValue:failureBlock forKey:@"_failureBlock"];
     }
-    if (finishedBlock) {
-        [request setValue:finishedBlock forKey:@"_finishedBlock"];
+    if (progressBlock) {
+        [request setValue:progressBlock forKey:@"_progressBlock"];
     }
 //    if (progressBlock && request.requestType != kXMRequestNormal) {
 //        [request setValue:progressBlock forKey:@"_progressBlock"];
 //    }
 }
-+ (NSUInteger)sendRequest:(RBConstructBlock)configBlock
++ (NSUInteger)sendRequest:(RBRequestBlock)requestBlock
                 onSuccess:(nullable RBSuccessBlock)successBlock
                 onFailure:(nullable RBFailureBlock)failureBlock{
-   return [[RBNetworkEngine defaultEngine] sendRequest:configBlock onProgress:nil onSuccess:successBlock onFailure:failureBlock onFinished:nil];
+    RBNetworkRequest *request = [RBNetworkRequest new];
+    if (requestBlock) {
+        requestBlock(request);
+    }
+    [RBNetworkEngine constructRequest:request onProgress:nil onSuccess:successBlock onFailure:failureBlock];
+    [[RBNetworkEngine defaultEngine] _startDefaultTask:request];
 
 }
-- (NSUInteger)sendRequest:(RBConstructBlock)configBlock
++(NSUInteger)uploadRequest:(RBUploadBlock)uploadBlock onProgress:(RBProgressBlock)progressBlock onSuccess:(RBSuccessBlock)successBlock onFailure:(RBFailureBlock)failureBlock{
+    RBUploadRequest *request = [RBUploadRequest new];
+    if (uploadBlock) {
+        uploadBlock(request);
+    }
+    [RBNetworkEngine constructRequest:request onProgress:nil onSuccess:successBlock onFailure:failureBlock];
+    [[RBNetworkEngine defaultEngine] _startUploadTask:request];
+}
+
+- (NSUInteger)sendRequest:(RBRequestBlock)requestBlock
                onProgress:(nullable RBProgressBlock)progressBlock
                 onSuccess:(nullable RBSuccessBlock)successBlock
-                onFailure:(nullable RBFailureBlock)failureBlock
-               onFinished:(nullable RBFinishedBlock)finishedBlock {
-    RBNetworkRequest *request = [RBNetworkRequest new];
-    if (configBlock) {
-        configBlock(request);
-    }
-    [self xm_processRequest:request onProgress:progressBlock onSuccess:successBlock onFailure:failureBlock onFinished:finishedBlock];
-    [self _startDefaultTask:request];
+                onFailure:(nullable RBFailureBlock)failureBlock{
+    
 }
 
 -(NSUInteger)_startDefaultTask:(RBNetworkRequest *)requestTask{
@@ -273,22 +282,22 @@
 //                break;
         }
     }
-//    if (error) {
-//        succeed = NO;
-//        requestError = error;
-//    } else if (serializationError) {
-//        succeed = NO;
-//        requestError = serializationError;
-//    } else {
-//        succeed = [self validateResult:request error:&validationError];
-//        requestError = validationError;
-//    }
+    if (error) {
+        succeed = NO;
+        //requestError = error;
+    } else if (serializationError) {
+        succeed = NO;
+        //requestError = serializationError;
+    } else {
+        //succeed = [self validateResult:request error:&validationError];
+        //requestError = validationError;
+    }
     
     if (succeed) {
        
         [self requestDidSucceedWithRequest:request];
     } else {
-        //[self requestDidFailWithRequest:request error:requestError];
+        [self requestDidFailWithRequest:request error:error];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -314,6 +323,45 @@
     });
 }
 
+- (void)requestDidFailWithRequest:(RBNetworkRequest *)request error:(NSError *)error {
+//    request.error = error;
+//    YTKLog(@"Request %@ failed, status code = %ld, error = %@",
+//           NSStringFromClass([request class]), (long)request.responseStatusCode, error.localizedDescription);
+    
+    // Save incomplete download data.
+    NSData *incompleteDownloadData = error.userInfo[NSURLSessionDownloadTaskResumeData];
+//    if (incompleteDownloadData) {
+//        [incompleteDownloadData writeToURL:[self incompleteDownloadTempPathForDownloadPath:request.resumableDownloadPath] atomically:YES];
+//    }
+    
+    // Load response from file and clean up if download task failed.
+    if ([request.responseObject isKindOfClass:[NSURL class]]) {
+        NSURL *url = request.responseObject;
+        if (url.isFileURL && [[NSFileManager defaultManager] fileExistsAtPath:url.path]) {
+            request.responseData = [NSData dataWithContentsOfURL:url];
+//            request.responseString = [[NSString alloc] initWithData:request.responseData encoding:[YTKNetworkUtils stringEncodingWithRequest:request]];
+            
+            [[NSFileManager defaultManager] removeItemAtURL:url error:nil];
+        }
+        request.responseObject = nil;
+    }
+    
+    @autoreleasepool {
+       // [request requestFailedPreprocessor];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+//        [request toggleAccessoriesWillStopCallBack];
+//        [request requestFailedFilter];
+//        
+//        if (request.delegate != nil) {
+//            [request.delegate requestFailed:request];
+//        }
+        if (request.failureBlock) {
+            request.failureBlock(error);
+        }
+//        [request toggleAccessoriesDidStopCallBack];
+    });
+}
 
 
 - (void)cancelTask:(RBNetworkRequest *)requestTask{
@@ -329,7 +377,7 @@
 }
 #pragma mark upload
 
-- (void)_startUploadTask:(RBUploadRequest *)uploadTask{
+- (NSInteger)_startUploadTask:(RBUploadRequest *)uploadTask{
        AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:uploadTask];
        NSString*urlStr = [self urlStringByRequest:uploadTask];
        NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
@@ -361,7 +409,7 @@
         if (uploadTask.failureBlock) {
             uploadTask.failureBlock(error);
         }
-          return;
+          return 0;
        }
         request.timeoutInterval = uploadTask.requestTimeout;
         __block  NSURLSessionUploadTask *uploadDataTask = nil;
@@ -372,15 +420,18 @@
                     });
                 }
             }completionHandler:^(NSURLResponse * _Nonnull response, id  _Nonnull responseObject, NSError * _Nonnull error){
-                if (!error) {
-                    [self handleRequestSuccess:uploadDataTask responseObject:responseObject];
-                }else{
-                    [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
-                }
+                
+                 [self handleResponseResult:uploadDataTask responseObject:responseObject error:error];
+//                if (!error) {
+//                    [self handleRequestSuccess:uploadDataTask responseObject:responseObject];
+//                }else{
+//                    [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
+//                }
             }];
-            //uploadTask.sessionTask = uploadDataTask;
-            [uploadDataTask resume];
-            [self addRequestObject:uploadTask];
+    [uploadTask setIdentifier:uploadDataTask.taskIdentifier];
+    [uploadDataTask resume];
+    [self addRequestObject:uploadTask];
+    return uploadTask.identifier;
     
 }
 

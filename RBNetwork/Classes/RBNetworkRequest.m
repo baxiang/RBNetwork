@@ -12,22 +12,22 @@
 @implementation RBNetworkRequest
 
 -(instancetype)init{
-    return [self initWithURLString:@"" method:RBRequestMethodGet params:nil];
-}
-- (instancetype)initWithURLString:(NSString *)URLString
-                           method:(RBRequestMethod)method
-                           params:(NSDictionary *)paramters{
     if (self = [super init]) {
-        _requestURL = URLString;
-        _requestMethod = method;
-        _requestParameters = paramters;
+        _requestMethod = RBRequestMethodPost;
         self.requestTimeout = [RBNetworkConfig defaultConfig].defaultTimeoutInterval;
         self.requestSerializerType = [RBNetworkConfig defaultConfig].defaultRequestSerializer;
         self.responseSerializerType = [RBNetworkConfig defaultConfig].defaultResponseSerializer;
     }
     return self;
+}
+- (instancetype)initWithURLString:(NSString *)URLString
+                           method:(RBRequestMethod)method
+                           params:(NSDictionary *)paramters{
+   
  
 }
+
+
 
 - (void)requestWillStartTag {
 //    if ([self.delegate respondsToSelector:@selector(requestWillStart:)]) {

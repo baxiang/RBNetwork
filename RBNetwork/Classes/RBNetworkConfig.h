@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 @class RBNetworkRequest;
-
+@class RBUploadRequest;
 #if DEBUG
 #define  RBNetworkAssert(condition,fmt,...) \
 if(!(condition)) {\
@@ -31,12 +31,6 @@ typedef NS_ENUM(NSUInteger, RBRequestMethod)
     RBRequestMethodOptions,
     RBRequestMethodHead
 };
-typedef NS_ENUM(NSUInteger, RBNetworkTaskType)
-{
-    RBNetworkTaskTypeRequest = 0,
-    RBNetworkTaskTypeDownload ,
-    RBNetworkTaskTypeUpload
-};
 typedef NS_ENUM(NSUInteger, RBNetworkCachePolicy)
 {
     RBNetworkCachePolicyIgnoreCache = 0,
@@ -57,7 +51,8 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityHigh = 4,
 };
 
-typedef void (^RBConstructBlock)(RBNetworkRequest *_Nullable request);
+typedef void (^RBRequestBlock)(RBNetworkRequest *_Nullable request);
+typedef void (^RBUploadBlock)(RBUploadRequest *_Nullable request);
 typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);

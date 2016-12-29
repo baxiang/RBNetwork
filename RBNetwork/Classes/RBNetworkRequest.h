@@ -56,12 +56,7 @@
 /**
  请求头
  */
-@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>* requestHeaders;
-
-/**
- 请求的类型 普通请求 上传请求 下载请求
- */
-@property (nonatomic, assign) RBNetworkTaskType taskType;
+@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*requestHeaders;
 
 /**
  请求成功的回调
