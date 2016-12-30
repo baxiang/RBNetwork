@@ -12,4 +12,5 @@
 
 + (BOOL)validateUrl:(NSString *)url;
 + (NSString *)md5String:(NSString *)string;
++ (BOOL)validateResumeData:(NSData *)data;
 @end

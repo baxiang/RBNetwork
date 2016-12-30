@@ -92,8 +92,6 @@
         _downloadingModels = [[NSMutableArray alloc] initWithCapacity:1];
         _downloadModelsDict = [[NSMutableDictionary alloc] initWithCapacity:1];
         [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
-        
-        //_sessionManager.requestSerializer.acceptableContentTypes =[RBNetworkConfig defaultConfig].acceptableContentTypes;
     }
     return self;
 }
@@ -157,7 +155,7 @@
 - (AFJSONResponseSerializer *)jsonResponseSerializer {
     if (!_jsonResponseSerializer) {
         _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
-        _jsonResponseSerializer.acceptableContentTypes = [RBNetworkConfig defaultConfig].acceptableContentTypes;
+        //_jsonResponseSerializer.acceptableContentTypes = [RBNetworkConfig defaultConfig].acceptableContentTypes;
     }
     return _jsonResponseSerializer;
 }
@@ -327,13 +325,13 @@
 //    request.error = error;
 //    YTKLog(@"Request %@ failed, status code = %ld, error = %@",
 //           NSStringFromClass([request class]), (long)request.responseStatusCode, error.localizedDescription);
-    
-    // Save incomplete download data.
-    NSData *incompleteDownloadData = error.userInfo[NSURLSessionDownloadTaskResumeData];
-//    if (incompleteDownloadData) {
-//        [incompleteDownloadData writeToURL:[self incompleteDownloadTempPathForDownloadPath:request.resumableDownloadPath] atomically:YES];
-//    }
-    
+    if ([request isKindOfClass:[RBDownloadRequest class]]) {
+        RBDownloadRequest *downLoadRequest = request;
+        NSData *incompleteDownloadData = error.userInfo[NSURLSessionDownloadTaskResumeData];
+        if (incompleteDownloadData) {
+            [incompleteDownloadData writeToURL:[self incompleteDownloadTempPathForDownloadPath:downLoadRequest.resumableDownloadPath] atomically:YES];
+        }
+    }
     // Load response from file and clean up if download task failed.
     if ([request.responseObject isKindOfClass:[NSURL class]]) {
         NSURL *url = request.responseObject;
@@ -420,13 +418,7 @@
                     });
                 }
             }completionHandler:^(NSURLResponse * _Nonnull response, id  _Nonnull responseObject, NSError * _Nonnull error){
-                
                  [self handleResponseResult:uploadDataTask responseObject:responseObject error:error];
-//                if (!error) {
-//                    [self handleRequestSuccess:uploadDataTask responseObject:responseObject];
-//                }else{
-//                    [self handleRequestFailure:uploadDataTask responseObject:responseObject error:error];
-//                }
             }];
     [uploadTask setIdentifier:uploadDataTask.taskIdentifier];
     [uploadDataTask resume];
@@ -469,6 +461,90 @@
 }
 
 #pragma mark download
+-(NSInteger)_startDownloadTask:(RBDownloadRequest*)downloadRequest{
+    NSString*downloadURL = [self urlStringByRequest:downloadRequest];
+    
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadURL]];
+    if (downloadRequest.requestHeaders.count > 0) {
+        [downloadRequest.requestHeaders enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+            //if (![urlRequest valueForHTTPHeaderField:field]) {
+            [urlRequest setValue:value forHTTPHeaderField:field];
+            //}
+        }];
+    }
+    urlRequest.timeoutInterval = downloadRequest.requestTimeout;
+    
+    NSURL *downloadFileSavePath;
+    BOOL isDirectory;
+    if(![[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.downloadSavePath isDirectory:&isDirectory]) {
+        isDirectory = NO;
+    }
+    if (isDirectory) {
+        NSString *fileName = [urlRequest.URL lastPathComponent];
+        downloadFileSavePath = [NSURL fileURLWithPath:[NSString pathWithComponents:@[downloadRequest.downloadSavePath, fileName]] isDirectory:NO];
+    } else {
+        downloadFileSavePath = [NSURL fileURLWithPath:downloadRequest.downloadSavePath isDirectory:NO];
+    }
+    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadFileSavePath]) {
+        [[NSFileManager defaultManager] removeItemAtPath:downloadFileSavePath error:nil];
+    }
+    BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath].path];
+    NSData *data = [NSData dataWithContentsOfURL:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath]];
+    BOOL resumeDataIsValid = [RBNetworkUtilities validateResumeData:data];
+    BOOL canBeResumed = resumeDataFileExists && resumeDataIsValid;
+    BOOL resumeSucceeded = NO;
+    __block NSURLSessionDownloadTask *downloadTask = nil;
+    // Try to resume with resumeData.
+    // Even though we try to validate the resumeData, this may still fail and raise excecption.
+    if (canBeResumed) {
+        @try {
+            downloadTask = [self.sessionManager downloadTaskWithResumeData:data progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+                return [NSURL fileURLWithPath:downloadFileSavePath isDirectory:NO];
+            } completionHandler:
+                            ^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+                                [self handleResponseResult:downloadTask responseObject:filePath error:error];
+                            }];
+            resumeSucceeded = YES;
+        } @catch (NSException *exception) {
+            //YTKLog(@"Resume download failed, reason = %@", exception.reason);
+            resumeSucceeded = NO;
+        }
+    }
+    if (!resumeSucceeded) {
+        downloadTask = [self.sessionManager downloadTaskWithRequest:urlRequest progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
+            return [NSURL fileURLWithPath:downloadFileSavePath isDirectory:NO];
+        } completionHandler:
+                        ^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
+                            [self handleResponseResult:downloadTask responseObject:filePath error:error];
+                        }];
+    }
+    [downloadRequest setIdentifier:downloadTask.taskIdentifier];
+    [downloadTask resume];
+    
+    return downloadRequest.identifier;
+
+}
+- (NSURL *)incompleteDownloadTempPathForDownloadPath:(NSString *)downloadPath {
+    NSString *tempPath = nil;
+    NSString *md5URLString = [RBNetworkUtilities md5String:downloadPath];
+    tempPath = [[self downloadTempCacheFolder] stringByAppendingPathComponent:md5URLString];
+    return [NSURL fileURLWithPath:tempPath];
+}
+- (NSString *)downloadTempCacheFolder {
+    NSFileManager *fileManager = [NSFileManager new];
+    static NSString *tempFolder;
+    if (!tempFolder) {
+        NSString *tempDir = NSTemporaryDirectory();
+        tempFolder = [tempDir stringByAppendingPathComponent:@"RBDownloadTemp"];
+    }
+    
+    NSError *error = nil;
+    if(![fileManager createDirectoryAtPath:tempFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
+        tempFolder = nil;
+    }
+    return tempFolder;
+}
+
 //-(void)_startDownloadTask:(RBDownloadRequest *)downloadRequest{
 //    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.filePath]) {
 //        if (downloadRequest.completionBlock) {

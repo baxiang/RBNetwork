@@ -20,24 +20,11 @@
     }
     return self;
 }
-- (instancetype)initWithURLString:(NSString *)URLString
-                           method:(RBRequestMethod)method
-                           params:(NSDictionary *)paramters{
-   
- 
-}
 
-
-
-- (void)requestWillStartTag {
-//    if ([self.delegate respondsToSelector:@selector(requestWillStart:)]) {
-//        [self.delegate requestWillStart:self];
-//    }
-}
 - (void)start {
-    [self requestWillStartTag];
     [[RBNetworkEngine defaultEngine] executeRequestTask:self];
 }
+
 - (void)stop {
     [[RBNetworkEngine defaultEngine] cancelTask:self];
 }

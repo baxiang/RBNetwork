@@ -9,6 +9,9 @@
 #import "RBNetworkRequest.h"
 
 @interface RBDownloadRequest : RBNetworkRequest
+
+@property (nonatomic, copy,nullable) NSString *downloadSavePath;
+@property (nonatomic, copy,nullable) NSString *resumableDownloadPath;
 /**
  *  下载数据的文件名
  */

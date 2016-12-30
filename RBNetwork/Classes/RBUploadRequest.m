@@ -58,7 +58,6 @@
     return _uploadFormDatas;
 }
 
-
 - (void)addFormDataWithName:(NSString *)name fileData:(NSData *)fileData {
     RBUploadFormData *formData = [RBUploadFormData formDataWithName:name fileData:fileData];
     [self.uploadFormDatas addObject:formData];

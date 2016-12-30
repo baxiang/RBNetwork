@@ -7,9 +7,6 @@
 //
 
 #import "RBNetworkRequest.h"
-#import <AFNetworking/AFURLRequestSerialization.h>
-typedef void (^RBConstructingBlock)(id<AFMultipartFormData> _Nullable formData);
-
 
 @interface RBUploadFormData : NSObject
 @property (nonatomic, copy,nonnull) NSString *name;
@@ -30,9 +27,6 @@ typedef void (^RBConstructingBlock)(id<AFMultipartFormData> _Nullable formData);
  */
 @interface RBUploadRequest : RBNetworkRequest
 @property(nonatomic,strong,nullable) NSMutableArray<RBUploadFormData *>*uploadFormDatas;
-@property (nonatomic, copy, nullable) RBConstructingBlock constructingBodyBlock;
-
-
 - (void)addFormDataWithName:(nonnull NSString *)name fileData:(nonnull NSData *)fileData;
 - (void)addFormDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileData:(nonnull NSData *)fileData;
 - (void)addFormDataWithName:(nonnull NSString *)name fileURL:(nonnull NSURL *)fileURL;

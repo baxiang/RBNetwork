@@ -7,21 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RBNetworkConfig.h"
 @class RBNetworkRequest;
 @class RBNetworkResponse;
-#import "RBNetworkConfig.h"
 
 
-@protocol RBRequestDelegate <NSObject>
-
-@optional
-
-- (void)requestWillStart:(nullable RBNetworkRequest *)request;
-- (void)requestDidSuccess:(nullable RBNetworkRequest *)request;
-- (void)requestDidFailure:(nullable RBNetworkRequest *)request;
-@end
 
 @interface RBNetworkRequest : NSObject
+/**
+ identifier
+ */
+@property (nonatomic, assign) NSUInteger identifier;
 /**
  *  BaseURL
  */
@@ -82,11 +78,24 @@
  */
 @property (nonatomic,  assign) BOOL isCacheData;
 
-
+/**
+ 返回的状态码
+ */
 @property (nonatomic, readwrite, assign) NSInteger statusCode;
+
+/**
+ <#Description#>
+ */
 @property (nonatomic, copy,nullable)   NSIndexSet *acceptableStatusCodes;
-@property (nonatomic, assign) NSUInteger identifier;
+
+/**
+ <#Description#>
+ */
 @property (nonatomic, strong, readwrite, nullable) id responseObject;
+
+/**
+ <#Description#>
+ */
 @property (nonatomic, strong, readwrite, nullable) NSData *responseData;
 /**
  *  开始任务
@@ -96,9 +105,7 @@
  *  结束任务
  */
 -(void)stop;
-//-(void)startWithCompletionBlock:(RBRequestCompletionBlock)completionBlock;
 
--(nullable instancetype)initWithURLString:(nullable NSString *)URLString method:(RBRequestMethod)method params:(nullable NSDictionary *)paramters;
 - (void)clearRequestBlock;
 - (nullable NSString *)httpMethodString;
 
