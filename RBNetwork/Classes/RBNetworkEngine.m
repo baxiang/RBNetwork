@@ -63,6 +63,8 @@
   
     OSSpinLock _lock;
     AFJSONResponseSerializer *_jsonResponseSerializer;
+    AFXMLParserResponseSerializer *_xmlResponseSerialzier;
+    NSIndexSet *_allStatusCodes;
 }
 
 + (RBNetworkEngine *)defaultEngine
@@ -92,6 +94,7 @@
         _downloadingModels = [[NSMutableArray alloc] initWithCapacity:1];
         _downloadModelsDict = [[NSMutableDictionary alloc] initWithCapacity:1];
         [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
+         _allStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
     }
     return self;
 }
@@ -156,30 +159,18 @@
     if (!_jsonResponseSerializer) {
         _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
         //_jsonResponseSerializer.acceptableContentTypes = [RBNetworkConfig defaultConfig].acceptableContentTypes;
+        _jsonResponseSerializer.acceptableStatusCodes = _allStatusCodes;
     }
     return _jsonResponseSerializer;
 }
-
-- (void)executeRequestTask:(RBNetworkRequest *)request{
-    if (![self networkReachability]) {
-        NSError *error =[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorNotConnectedToInternet description:@"网络连接失败"];
-        if (request.failureBlock) {
-             request.failureBlock(error);
-        }
-        return;
+- (AFXMLParserResponseSerializer *)xmlParserResponseSerialzier {
+    if (!_xmlResponseSerialzier) {
+        _xmlResponseSerialzier = [AFXMLParserResponseSerializer serializer];
+        _xmlResponseSerialzier.acceptableStatusCodes = _allStatusCodes;
     }
-    NSIndexSet *acceptableStatusCodes = request.acceptableStatusCodes ?: [RBNetworkConfig defaultConfig].defaultAcceptableStatusCodes;
-    if (acceptableStatusCodes) {
-        self.sessionManager.responseSerializer.acceptableStatusCodes = acceptableStatusCodes;
-    }
-    if ([request isKindOfClass:[RBDownloadRequest class]]) {
-        //[self _startDownloadTask:(RBDownloadRequest*)request];
-    }else if ([request isKindOfClass:[RBUploadRequest class]]){
-        [self _startUploadTask:(RBUploadRequest*)request];
-    }else{
-        [self _startDefaultTask:request];
-    }
+    return _xmlResponseSerialzier;
 }
+
 + (void)constructRequest:(RBNetworkRequest *)request
                onProgress:(RBProgressBlock)progressBlock
                 onSuccess:(RBSuccessBlock)successBlock
@@ -195,9 +186,6 @@
     if (progressBlock) {
         [request setValue:progressBlock forKey:@"_progressBlock"];
     }
-//    if (progressBlock && request.requestType != kXMRequestNormal) {
-//        [request setValue:progressBlock forKey:@"_progressBlock"];
-//    }
 }
 + (NSUInteger)sendRequest:(RBRequestBlock)requestBlock
                 onSuccess:(nullable RBSuccessBlock)successBlock
@@ -214,6 +202,16 @@
     RBUploadRequest *request = [RBUploadRequest new];
     if (uploadBlock) {
         uploadBlock(request);
+    }
+    [RBNetworkEngine constructRequest:request onProgress:nil onSuccess:successBlock onFailure:failureBlock];
+    [[RBNetworkEngine defaultEngine] _startUploadTask:request];
+}
+
+
++(NSUInteger)downloadRequest:(RBDownloadBlock)downloadBlock onProgress:(RBProgressBlock)progressBlock onSuccess:(RBSuccessBlock)successBlock onFailure:(RBFailureBlock)failureBlock{
+    RBDownloadRequest *request = [RBDownloadRequest new];
+    if (downloadBlock) {
+        downloadBlock(request);
     }
     [RBNetworkEngine constructRequest:request onProgress:nil onSuccess:successBlock onFailure:failureBlock];
     [[RBNetworkEngine defaultEngine] _startUploadTask:request];
@@ -261,38 +259,36 @@
     Unlock();
     NSError * __autoreleasing serializationError = nil;
     NSError * __autoreleasing validationError = nil;
+    NSError *requestError = nil;
     request.responseObject = responseObject;
-    BOOL succeed = YES;
+    request.responseStatusCode = [(NSHTTPURLResponse *)task.response statusCode];
+    BOOL succeed = NO;
     if ([request.responseObject isKindOfClass:[NSData class]]) {
         request.responseData = responseObject;
-//        request.responseString = [[NSString alloc] initWithData:responseObject encoding:[YTKNetworkUtils stringEncodingWithRequest:request]];
-       
         switch (request.responseSerializerType) {
             case RBResponseSerializerTypeHTTP:
                 // Default serializer. Do nothing.
                 break;
             case RBResponseSerializerTypeJSON:
                 request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
-                //request.responseJSONObject = request.responseObject;
+                request.responseJSONObject = request.responseObject;
                 break;
-//            case YTKResponseSerializerTypeXMLParser:
-//                request.responseObject = [self.xmlParserResponseSerialzier responseObjectForResponse:task.response data:request.responseData error:&serializationError];
-//                break;
+            case RBResponseSerializerTypeXML:
+                request.responseObject = [self.xmlParserResponseSerialzier responseObjectForResponse:task.response data:request.responseData error:&serializationError];
+                break;
         }
     }
     if (error) {
         succeed = NO;
-        //requestError = error;
+        requestError = error;
     } else if (serializationError) {
         succeed = NO;
-        //requestError = serializationError;
+        requestError = serializationError;
     } else {
-        //succeed = [self validateResult:request error:&validationError];
-        //requestError = validationError;
+        succeed = [self validateResult:request error:&validationError];
+        requestError = validationError;
     }
-    
     if (succeed) {
-       
         [self requestDidSucceedWithRequest:request];
     } else {
         [self requestDidFailWithRequest:request error:error];
@@ -322,9 +318,6 @@
 }
 
 - (void)requestDidFailWithRequest:(RBNetworkRequest *)request error:(NSError *)error {
-//    request.error = error;
-//    YTKLog(@"Request %@ failed, status code = %ld, error = %@",
-//           NSStringFromClass([request class]), (long)request.responseStatusCode, error.localizedDescription);
     if ([request isKindOfClass:[RBDownloadRequest class]]) {
         RBDownloadRequest *downLoadRequest = request;
         NSData *incompleteDownloadData = error.userInfo[NSURLSessionDownloadTaskResumeData];
@@ -359,6 +352,16 @@
         }
 //        [request toggleAccessoriesDidStopCallBack];
     });
+}
+- (BOOL)validateResult:(RBNetworkRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
+    BOOL result = [request statusCodeValidator];
+    if (!result) {
+        if (error) {
+            *error = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestParseFailure userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
+        }
+        return result;
+    }
+    return YES;
 }
 
 
@@ -439,25 +442,6 @@
     Lock();
      [_requestRecordDict removeObjectForKey:@(request.identifier)];
     Unlock();
-}
-- (void)handleRequestSuccess:(NSURLSessionTask *)sessionTask responseObject:(id)response {
-    RBNetworkRequest  *request = _requestRecordDict[@(sessionTask.taskIdentifier)];
-    request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
-    [self removeRequestObject:request];
-    if(request.successBlock) {
-        request.isCacheData = NO;
-        //id  jsonData =[response valueForKeyPath:request.responseContentDataKey];
-        request.successBlock(response);
-    }
-}
-- (void)handleRequestFailure:(NSURLSessionTask *)sessionTask responseObject:responseObject error:(NSError *)error {
-    RBNetworkRequest  *request = _requestRecordDict[@(sessionTask.taskIdentifier)];
-    request.statusCode = [(NSHTTPURLResponse *)sessionTask.response statusCode];
-    [self removeRequestObject:request];
-    if (request.failureBlock) {
-        request.failureBlock(error);
-    }
-    
 }
 
 #pragma mark download

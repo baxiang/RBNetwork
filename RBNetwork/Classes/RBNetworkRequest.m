@@ -21,13 +21,7 @@
     return self;
 }
 
-- (void)start {
-    [[RBNetworkEngine defaultEngine] executeRequestTask:self];
-}
 
-- (void)stop {
-    [[RBNetworkEngine defaultEngine] cancelTask:self];
-}
 
 
 - (NSString *)httpMethodString

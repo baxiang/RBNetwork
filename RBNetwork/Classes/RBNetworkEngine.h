@@ -12,7 +12,7 @@
 
 @interface RBNetworkEngine : NSObject
 + (nullable RBNetworkEngine *)defaultEngine;
-- (void)executeRequestTask:(nullable RBNetworkRequest *)request;
+
 - (void)cancelTask:(nullable RBNetworkRequest *)httpTask;
 - (void)cancelAllTask;
 + (NSUInteger)sendRequest:(nullable RBRequestBlock)requestBlock
@@ -23,5 +23,5 @@
                  onSuccess:(nullable RBSuccessBlock)successBlock
                  onFailure:(nullable RBFailureBlock)failureBlock;
               
-
++(NSUInteger)downloadRequest:(nullable RBDownloadBlock)downloadBlock onProgress:(nullable RBProgressBlock)progressBlock onSuccess:(nullable RBSuccessBlock)successBlock onFailure:(nullable RBFailureBlock)failureBlock;
 @end

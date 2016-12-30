@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 @class RBNetworkRequest;
 @class RBUploadRequest;
+@class RBDownloadRequest;
 #if DEBUG
 #define  RBNetworkAssert(condition,fmt,...) \
 if(!(condition)) {\
@@ -44,6 +45,7 @@ typedef NS_ENUM(NSInteger , RBRequestSerializerType) {
 typedef NS_ENUM(NSInteger , RBResponseSerializerType) {
     RBResponseSerializerTypeHTTP = 0,
     RBResponseSerializerTypeJSON,
+    RBResponseSerializerTypeXML
 };
 typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityLow = -4L,
@@ -53,6 +55,7 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
 
 typedef void (^RBRequestBlock)(RBNetworkRequest *_Nullable request);
 typedef void (^RBUploadBlock)(RBUploadRequest *_Nullable request);
+typedef void (^RBDownloadBlock)(RBDownloadRequest *_Nullable request);
 typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);

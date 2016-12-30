@@ -81,7 +81,7 @@
 /**
  返回的状态码
  */
-@property (nonatomic, readwrite, assign) NSInteger statusCode;
+@property (nonatomic, readwrite, assign) NSInteger responseStatusCode;
 
 /**
  <#Description#>
@@ -97,17 +97,15 @@
  <#Description#>
  */
 @property (nonatomic, strong, readwrite, nullable) NSData *responseData;
+
 /**
- *  开始任务
+ json data
  */
--(void) start;
-/**
- *  结束任务
- */
--(void)stop;
+@property (nonatomic, strong, readwrite, nullable) id responseJSONObject;
+
 
 - (void)clearRequestBlock;
 - (nullable NSString *)httpMethodString;
-
+- (BOOL)statusCodeValidator;
 
 @end
