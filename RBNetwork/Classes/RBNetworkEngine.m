@@ -535,6 +535,7 @@
             Lock();
             RBNetworkRequest *request = _requestRecordDict[key];
             Unlock();
+            [self cancelRequest:request];
             // We are using non-recursive lock.
             // Do not lock `stop`, otherwise deadlock may occur.
             //[request stop];

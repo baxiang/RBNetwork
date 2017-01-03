@@ -13,7 +13,7 @@
 
 @interface RBNetworkRequest : NSObject
 /**
- identifier
+ requestTask
  */
 @property (nonatomic, strong) NSURLSessionTask *requestTask;
 
@@ -124,7 +124,6 @@
 - (void)addFormDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileURL:(nonnull NSURL *)fileURL;
 - (void)clearRequestBlock;
 - (nullable NSString *)httpMethodString;
-
 - (BOOL)statusCodeValidator;
 
 @end
