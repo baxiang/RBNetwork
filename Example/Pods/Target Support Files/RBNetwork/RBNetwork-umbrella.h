@@ -11,7 +11,6 @@
 #endif
 
 #import "NSError+RBNetwork.h"
-#import "RBDownloadRequest.h"
 #import "RBNetwork.h"
 #import "RBNetworkConfig.h"
 #import "RBNetworkEngine.h"
@@ -19,7 +18,6 @@
 #import "RBNetworkRequest.h"
 #import "RBNetworkUtilities.h"
 #import "RBQueueRequest.h"
-#import "RBUploadRequest.h"
 
 FOUNDATION_EXPORT double RBNetworkVersionNumber;
 FOUNDATION_EXPORT const unsigned char RBNetworkVersionString[];

@@ -61,7 +61,7 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
 typedef NS_ENUM(NSInteger, RBRequestType) {
     RBMRequestDefault = 0,    // HTTP request type, such as GET, POST, ...
     RBRequestDownload,    // Download request type
-    RBRequestUpload,        // Upload request type
+    RBRequestUpload,      // Upload request type
    
 };
 
