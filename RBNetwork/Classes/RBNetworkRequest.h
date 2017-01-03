@@ -8,9 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RBNetworkConfig.h"
-@class RBNetworkRequest;
-@class RBNetworkResponse;
-
+@class RBUploadFormData;
 
 
 @interface RBNetworkRequest : NSObject
@@ -18,6 +16,11 @@
  identifier
  */
 @property (nonatomic, assign) NSUInteger identifier;
+
+/**
+ 请求的类型
+ */
+@property (nonatomic, assign) RBRequestType requestType;
 /**
  *  BaseURL
  */
@@ -55,28 +58,39 @@
 @property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*requestHeaders;
 
 /**
+ 下载的存储路径
+ */
+@property (nonatomic, copy,nullable) NSString *downloadSavePath;
+
+/**
+ 断点下载的存储路径
+ */
+@property (nonatomic, copy,nullable) NSString *resumableDownloadPath;
+/**
  请求成功的回调
  */
-@property (nonatomic, copy, readonly, nullable) RBSuccessBlock successBlock;
+@property (nonatomic, copy, nullable) RBSuccessBlock successBlock;
 
 /**
  请求失败的回调
  */
-@property (nonatomic, copy, readonly, nullable) RBFailureBlock failureBlock;
+@property (nonatomic, copy, nullable) RBFailureBlock failureBlock;
 
 /**
  请求的进度回调
  */
-@property (nonatomic, copy, readonly, nullable) RBProgressBlock progressBlock;
+@property (nonatomic, copy, nullable) RBProgressBlock progressBlock;
+
+/**
+ 请求的数据回调
+ */
+@property(nonatomic,copy,nullable) RBFinishedBlock finishBlock;
 
 /**
  *  请求的缓存策略
  */
 @property (nonatomic, assign) RBNetworkCachePolicy cachePolicy;
-/**
- *  是否是缓存数据
- */
-@property (nonatomic,  assign) BOOL isCacheData;
+
 
 /**
  返回的状态码
@@ -103,9 +117,28 @@
  */
 @property (nonatomic, strong, readwrite, nullable) id responseJSONObject;
 
-
+@property(nonatomic,strong,nullable) NSMutableArray<RBUploadFormData *>*uploadFormDatas;
+- (void)addFormDataWithName:(nonnull NSString *)name fileData:(nonnull NSData *)fileData;
+- (void)addFormDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileData:(nonnull NSData *)fileData;
+- (void)addFormDataWithName:(nonnull NSString *)name fileURL:(nonnull NSURL *)fileURL;
+- (void)addFormDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileURL:(nonnull NSURL *)fileURL;
 - (void)clearRequestBlock;
 - (nullable NSString *)httpMethodString;
+
 - (BOOL)statusCodeValidator;
+
+@end
+
+@interface RBUploadFormData : NSObject
+@property (nonatomic, copy,nonnull) NSString *name;
+@property (nonatomic, copy, nullable) NSString *fileName;
+@property (nonatomic, copy, nullable) NSString *mimeType;
+@property (nonatomic, strong, nonnull) NSData *fileData;
+@property (nonatomic, strong, nonnull) NSURL *fileURL;
+
++ (nonnull instancetype)formDataWithName:(nonnull NSString *)name fileData:(nonnull NSData *)fileData;
++ (nonnull instancetype)formDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileData:(nonnull NSData *)fileData;
++ (nonnull instancetype)formDataWithName:(nonnull NSString *)name fileURL:(nonnull NSURL *)fileURL;
++ (nonnull instancetype)formDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileURL:(nonnull NSURL *)fileURL;
 
 @end

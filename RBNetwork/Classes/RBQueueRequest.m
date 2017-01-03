@@ -7,8 +7,7 @@
 //
 
 #import "RBQueueRequest.h"
-#import "RBNetworkRequest.h"
-#import "RBNetworkEngine.h"
+
 @interface RBQueueRequest () {
     NSUInteger _chainIndex;
 }
@@ -33,7 +32,6 @@
     _chainIndex = 0;
     _responseArray = [NSMutableArray array];
     _nextBlockArray = [NSMutableArray array];
-    
     return self;
 }
 
@@ -63,6 +61,7 @@
             nextBlock(_nextRequest, responseObject, &startNext);
             if (!startNext) {
                 RB_SAFE_BLOCK(_queueFailureBlock, _responseArray);
+
                 [self cleanCallbackBlocks];
             }
         } else {

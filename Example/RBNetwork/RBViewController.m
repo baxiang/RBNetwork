@@ -14,9 +14,7 @@
 @interface RBViewController ()
 @property(nonatomic,copy) NSString *weiboToken;
 @end
-
 @implementation RBViewController
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -42,6 +40,8 @@
        cell.textLabel.text = @"POST请求";
     }else if (indexPath.row ==2){
         cell.textLabel.text = @"upload请求";
+    }else if (indexPath.row ==2){
+        cell.textLabel.text = @"队列请求";
     }
     return cell;
 }
@@ -59,7 +59,7 @@
     [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
         request.requestURL = @"/statuses/public_timeline.json";
         request.requestMethod = RBRequestMethodGet;
-        request.requestParameters = @{@"access_token":_weiboToken};
+        request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
     } onSuccess:^(id responseObject) {
         NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
@@ -71,7 +71,7 @@
     [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
         request.requestURL = @"/statuses/public_timeline.json";
         request.requestMethod = RBRequestMethodGet;
-        request.requestParameters = @{@"access_token":_weiboToken};
+        request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
     } onSuccess:^(id responseObject) {
         NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
@@ -81,21 +81,44 @@
 
 }
 -(void)uploadWeiboPhoto{
-
-   [RBNetworkEngine uploadRequest:^(RBUploadRequest * _Nullable request) {
+   [RBNetworkEngine sendRequest:^(RBNetworkRequest * _Nullable request) {
        request.requestURL = @"/statuses/upload.json";
-       request.requestParameters = @{@"access_token":_weiboToken,@"status":@"测试图片微博"};
+       request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken],@"status":@"测试图片微博"};
        NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
        [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
-   } onProgress:^(NSProgress * _Nullable progress) {
-       
+       request.requestType = RBRequestUpload;
+       request.requestMethod = RBRequestMethodPost;
    } onSuccess:^(id  _Nullable responseObject) {
-       NSLog(@"%@",responseObject);
+        NSLog(@"%@",responseObject);
    } onFailure:^(NSError * _Nullable error) {
         NSLog(@"%@",error);
    }];
     
-    
+//   [RBNetworkEngine uploadRequest:^(RBUploadRequest * _Nullable request) {
+//       request.requestURL = @"/statuses/upload.json";
+//       request.requestParameters = @{@"access_token":_weiboToken,@"status":@"测试图片微博"};
+//       NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
+//       [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
+//   } onProgress:^(NSProgress * _Nullable progress) {
+//       
+//   } onSuccess:^(id  _Nullable responseObject) {
+//       NSLog(@"%@",responseObject);
+//   } onFailure:^(NSError * _Nullable error) {
+//        NSLog(@"%@",error);
+//   }];
+}
+-(void)refeshWeiboToken{
+//   [RBNetworkEngine sendChainRequest:^(RBQueueRequest *queueRequest) {
+//       [[queueRequest onFirst:^(RBNetworkRequest *queueRequest) {
+//           queueRequest.requestURL = @"";
+//       }] onNext:^(RBNetworkRequest *request, id  _Nullable responseObject, BOOL *sendNext) {
+//           
+//       }];
+//   } onSuccess:^(NSArray<id> *responseObjects) {
+//       
+//   } onFailure:^(NSArray<id> *errors) {
+//       
+//   }];
 }
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if (alertView.cancelButtonIndex!= buttonIndex) {

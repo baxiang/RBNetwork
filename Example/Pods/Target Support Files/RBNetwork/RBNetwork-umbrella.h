@@ -1,6 +1,16 @@
+#ifdef __OBJC__
 #import <UIKit/UIKit.h>
+#else
+#ifndef FOUNDATION_EXPORT
+#if defined(__cplusplus)
+#define FOUNDATION_EXPORT extern "C"
+#else
+#define FOUNDATION_EXPORT extern
+#endif
+#endif
+#endif
 
-#import "NSError+PDNetwork.h"
+#import "NSError+RBNetwork.h"
 #import "RBDownloadRequest.h"
 #import "RBNetwork.h"
 #import "RBNetworkConfig.h"
@@ -8,7 +18,7 @@
 #import "RBNetworkLogger.h"
 #import "RBNetworkRequest.h"
 #import "RBNetworkUtilities.h"
-#import "RBReachability.h"
+#import "RBQueueRequest.h"
 #import "RBUploadRequest.h"
 
 FOUNDATION_EXPORT double RBNetworkVersionNumber;

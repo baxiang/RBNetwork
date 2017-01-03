@@ -58,6 +58,12 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityDefault = 0,
     RBRequestPriorityHigh = 4,
 };
+typedef NS_ENUM(NSInteger, RBRequestType) {
+    RBMRequestDefault = 0,    // HTTP request type, such as GET, POST, ...
+    RBRequestDownload,    // Download request type
+    RBRequestUpload,        // Upload request type
+   
+};
 
 typedef void (^RBRequestBlock)(RBNetworkRequest *_Nullable request);
 typedef void (^RBCancelBlock)(RBNetworkRequest * _Nullable request);
@@ -66,9 +72,10 @@ typedef void (^RBDownloadBlock)(RBDownloadRequest *_Nullable request);
 typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);
+typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable error);
 typedef void (^RBBatchSuccessBlock)(NSArray<id> *responseObjects);
 typedef void (^RBBatchFailureBlock)(NSArray<id> *errors);
-typedef void (^RBQueueRequestConfigBlock)(RBQueueRequest *queueRequest);
+typedef void (^RBQueueRequestBlock)(RBQueueRequest *queueRequest);
 typedef void (^RBQueueNextBlock)(RBNetworkRequest *request, id _Nullable responseObject, BOOL *sendNext);
 @interface RBNetworkConfig : NSObject
 

@@ -6,8 +6,6 @@
 //  Copyright © 2016年 Zhi Kuiyu. All rights reserved.
 //
 #import "RBNetworkRequest.h"
-#import "RBUploadRequest.h"
-#import "RBDownloadRequest.h"
 #import "RBNetworkEngine.h"
 #import "RBNetworkConfig.h"
 #import "NSError+RBNetwork.h"
