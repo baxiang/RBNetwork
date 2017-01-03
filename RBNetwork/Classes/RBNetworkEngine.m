@@ -8,7 +8,6 @@
 
 #import "RBNetworkEngine.h"
 #import "AFNetworking.h"
-#import "RBUploadRequest.h"
 #import "NSError+RBNetwork.h"
 #import "RBNetworkLogger.h"
 #import <CommonCrypto/CommonDigest.h>
@@ -188,7 +187,8 @@
         case RBRequestDownload:
             [self _startDownloadTask:request];
             break;
-            
+        case RBRequestUpload:
+            [self _startUploadTask:request];
         default:
             [self _startDefaultTask:request];
             break;
@@ -402,12 +402,12 @@
 }
 #pragma mark upload
 
-- (NSInteger)_startUploadTask:(RBUploadRequest *)uploadTask{
+- (NSInteger)_startUploadTask:(RBNetworkRequest *)uploadTask{
        AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:uploadTask];
        NSString*urlStr = [self urlStringByRequest:uploadTask];
        NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
       __block NSError *serializationError = nil;
-   NSMutableURLRequest *request = [requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:urlStr parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+      NSMutableURLRequest *request = [requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:urlStr parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
        [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
            if (obj.fileData) {
                if (obj.fileName && obj.mimeType) {
