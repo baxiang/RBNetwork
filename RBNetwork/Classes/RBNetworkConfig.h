@@ -73,10 +73,10 @@ typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);
 typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable error);
-typedef void (^RBBatchSuccessBlock)(NSArray<id> *responseObjects);
-typedef void (^RBBatchFailureBlock)(NSArray<id> *errors);
-typedef void (^RBQueueRequestBlock)(RBQueueRequest *queueRequest);
-typedef void (^RBQueueNextBlock)(RBNetworkRequest *request, id _Nullable responseObject, BOOL *sendNext);
+typedef void (^RBBatchSuccessBlock)(NSArray<id> * _Nullable responseObjects);
+typedef void (^RBBatchFailureBlock)(NSArray<id> * _Nullable errors);
+typedef void (^RBQueueRequestBlock)( RBQueueRequest *_Nullable queueRequest);
+typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullable responseObject, BOOL *_Nullable sendNext);
 @interface RBNetworkConfig : NSObject
 
 + (nullable RBNetworkConfig *)defaultConfig;
