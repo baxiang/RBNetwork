@@ -702,4 +702,27 @@
 //    [dict writeToFile:[self managerPlistFilePath] atomically:YES];
 //}
 
++ (void)cancelRequest:(NSUInteger)identifier {
+    [self cancelRequest:identifier onCancel:nil];
+}
+
++ (void)cancelRequest:(NSUInteger)identifier
+             onCancel:(nullable RBCancelBlock)cancelBlock {
+    RBNetworkRequest *request = [[RBNetworkEngine defaultEngine] cancelRequestByIdentifier:identifier];
+    RB_SAFE_BLOCK(cancelBlock, request);
+}
+- (nullable RBNetworkRequest *)cancelRequestByIdentifier:(NSUInteger)identifier {
+    if (identifier == 0) return nil;
+    __block RBNetworkRequest *request = nil;
+    Lock();
+    [self.sessionManager.tasks enumerateObjectsUsingBlock:^(NSURLSessionTask *task, NSUInteger idx, BOOL *stop) {
+        if (task.taskIdentifier == identifier) {
+            [task cancel];
+            *stop = YES;
+        }
+    }];
+    Unlock();
+    return request;
+}
+
 @end

@@ -78,22 +78,10 @@
         NSLog(@"%@",error);
     }];
     
-//    RBNetworkRequest *request  = [[RBNetworkRequest alloc] initWithURLString:@"/statuses/update.json" method:RBRequestMethodPost params:@{@"access_token":_weiboToken,@"status":@"微博开发测试"}];
-//    [request startWithCompletionBlock:^(__kindof RBNetworkRequest *requestTask, id response, NSError *error) {
-//        NSLog(@"%@",requestTask.responseObject);
-//    }];
+
 }
 -(void)uploadWeiboPhoto{
-//    NSMutableDictionary *paraDict = [NSMutableDictionary dictionary];
-//    [paraDict setObject:[NSString stringWithFormat:@"%@",_weiboToken] forKey:@"access_token"];
-//    [paraDict setObject:@"测试图片微博" forKey:@"status"];
-//    RBUploadRequest *request = [[RBUploadRequest alloc] initWithURLString:@"/statuses/upload.json" method:RBRequestMethodPost params:paraDict];
-//    NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
-//    [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
-//    [request start];
-   
-    
-    
+
    [RBNetworkEngine uploadRequest:^(RBUploadRequest * _Nullable request) {
        request.requestURL = @"/statuses/upload.json";
        request.requestParameters = @{@"access_token":_weiboToken,@"status":@"测试图片微博"};

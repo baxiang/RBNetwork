@@ -11,6 +11,7 @@
 @class RBNetworkRequest;
 @class RBUploadRequest;
 @class RBDownloadRequest;
+@class RBQueueRequest;
 #if DEBUG
 #define  RBNetworkAssert(condition,fmt,...) \
 if(!(condition)) {\
@@ -22,6 +23,11 @@ if(!(condition)) {\
 NSLog((@"crush in debug :%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);\
 }
 #endif
+
+#define RB_SAFE_BLOCK(BlockName, ...) \
+if(BlockName){\
+   BlockName(__VA_ARGS__);\
+}
 
 typedef NS_ENUM(NSUInteger, RBRequestMethod)
 {
@@ -54,13 +60,16 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
 };
 
 typedef void (^RBRequestBlock)(RBNetworkRequest *_Nullable request);
+typedef void (^RBCancelBlock)(RBNetworkRequest * _Nullable request);
 typedef void (^RBUploadBlock)(RBUploadRequest *_Nullable request);
 typedef void (^RBDownloadBlock)(RBDownloadRequest *_Nullable request);
 typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
 typedef void (^RBSuccessBlock)(id _Nullable responseObject);
 typedef void (^RBFailureBlock)(NSError * _Nullable error);
-typedef void (^RBFinishedBlock)(id _Nullable responseObject, NSError * _Nullable error);
-
+typedef void (^RBBatchSuccessBlock)(NSArray<id> *responseObjects);
+typedef void (^RBBatchFailureBlock)(NSArray<id> *errors);
+typedef void (^RBQueueRequestConfigBlock)(RBQueueRequest *queueRequest);
+typedef void (^RBQueueNextBlock)(RBNetworkRequest *request, id _Nullable responseObject, BOOL *sendNext);
 @interface RBNetworkConfig : NSObject
 
 + (nullable RBNetworkConfig *)defaultConfig;

@@ -58,6 +58,8 @@
 		B5852322ADE88AAD56EE042B80BA81E4 /* AFURLResponseSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = ADD757309A5ED7DD1C8244D254A87285 /* AFURLResponseSerialization.m */; };
 		B99FAFBBC58F176BCBAA61124A21C14B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55C739F1127D7E94D9137583AECFCC0E /* Foundation.framework */; };
 		BD7E7A2AA5F3324A064979DB7767F2D7 /* RBNetworkUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 6ADCF9F68F35811997A240A69CF83912 /* RBNetworkUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C26A1A531E1B51AB0021FCC4 /* RBQueueRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = C26A1A511E1B51AB0021FCC4 /* RBQueueRequest.h */; };
+		C26A1A541E1B51AB0021FCC4 /* RBQueueRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C26A1A521E1B51AB0021FCC4 /* RBQueueRequest.m */; };
 		C2DD28375E1F0B1D0D1D2E4E607C499F /* AFSecurityPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 535CEA9E000E76D5FFE16EFBC772F0BD /* AFSecurityPolicy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C6354FEC7728A4C86DAD8092509BA7D4 /* UIRefreshControl+AFNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B782FCF322B702B1144AE5FA55A463 /* UIRefreshControl+AFNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C7AB68C759EFA2721D9150E90A6D9F75 /* AFNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5461D992F0D803F0F05DF72B2849301D /* AFNetworking.framework */; };
@@ -174,6 +176,8 @@
 		B3CB7FC550BCA0BD6B7B1BC062EF7BEC /* AFNetworking.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFNetworking.h; path = AFNetworking/AFNetworking.h; sourceTree = "<group>"; };
 		B69E872BDE5A2F0D202C68A8F24E0132 /* AFURLResponseSerialization.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFURLResponseSerialization.h; path = AFNetworking/AFURLResponseSerialization.h; sourceTree = "<group>"; };
 		B757F8E9FF70A22E4326BCE96BF34D9E /* UIRefreshControl+AFNetworking.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "UIRefreshControl+AFNetworking.m"; path = "UIKit+AFNetworking/UIRefreshControl+AFNetworking.m"; sourceTree = "<group>"; };
+		C26A1A511E1B51AB0021FCC4 /* RBQueueRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RBQueueRequest.h; sourceTree = "<group>"; };
+		C26A1A521E1B51AB0021FCC4 /* RBQueueRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RBQueueRequest.m; sourceTree = "<group>"; };
 		C30ECE7599A0D05EAFC1573911F01910 /* Pods-RBNetwork_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-RBNetwork_Example-frameworks.sh"; sourceTree = "<group>"; };
 		C53988B41BFD74EE13612A4293F09CD6 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.3.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
 		C8768C691D22D9C7E19B9DB8E68FDECD /* WeiboSDK.bundle */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "wrapper.plug-in"; name = WeiboSDK.bundle; path = libWeiboSDK/WeiboSDK.bundle; sourceTree = "<group>"; };
@@ -439,6 +443,8 @@
 				5316B7A5F3D9C2556A62058A2CAEF40A /* RBNetworkUtilities.m */,
 				4778A8BEFCC04DF45CF223CFD7BC3261 /* RBUploadRequest.h */,
 				C895CF04FD78A9D73D5DA280F1CF2ADB /* RBUploadRequest.m */,
+				C26A1A511E1B51AB0021FCC4 /* RBQueueRequest.h */,
+				C26A1A521E1B51AB0021FCC4 /* RBQueueRequest.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -569,6 +575,7 @@
 				AB39AC9746E7575D7449700475E41B0B /* AFHTTPSessionManager.h in Headers */,
 				5808B477EFF509D810B5CDCFDC944F80 /* AFImageDownloader.h in Headers */,
 				1480F4923DBBF217F60572EEECB4027C /* AFNetworkActivityIndicatorManager.h in Headers */,
+				C26A1A531E1B51AB0021FCC4 /* RBQueueRequest.h in Headers */,
 				EC7CADE416A78A1CD6936018A6695126 /* AFNetworking-umbrella.h in Headers */,
 				E7988678C81F7CCB95D239375FC6986D /* AFNetworking.h in Headers */,
 				68152D921ABF6A423C192C04FDF94F0F /* AFNetworkReachabilityManager.h in Headers */,
@@ -719,6 +726,7 @@
 				68A38977EBAE334DC3C22386D00D2622 /* AFNetworkReachabilityManager.m in Sources */,
 				20607BE2B1E5F31765026E5AC64DB27D /* AFSecurityPolicy.m in Sources */,
 				DFFA215EEAA8DDBD540076927535275C /* AFURLRequestSerialization.m in Sources */,
+				C26A1A541E1B51AB0021FCC4 /* RBQueueRequest.m in Sources */,
 				B5852322ADE88AAD56EE042B80BA81E4 /* AFURLResponseSerialization.m in Sources */,
 				707B1A7541C8DBDDE8C27896A61370BE /* AFURLSessionManager.m in Sources */,
 				6ED4ABEE8A5F51F5ECB59FA1781D29C6 /* UIActivityIndicatorView+AFNetworking.m in Sources */,
