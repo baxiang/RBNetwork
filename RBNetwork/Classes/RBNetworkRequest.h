@@ -15,7 +15,7 @@
 /**
  identifier
  */
-@property (nonatomic, assign) NSUInteger identifier;
+@property (nonatomic, strong) NSURLSessionTask *requestTask;
 
 /**
  请求的类型

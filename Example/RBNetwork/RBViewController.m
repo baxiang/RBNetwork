@@ -94,18 +94,6 @@
         NSLog(@"%@",error);
    }];
     
-//   [RBNetworkEngine uploadRequest:^(RBUploadRequest * _Nullable request) {
-//       request.requestURL = @"/statuses/upload.json";
-//       request.requestParameters = @{@"access_token":_weiboToken,@"status":@"测试图片微博"};
-//       NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
-//       [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
-//   } onProgress:^(NSProgress * _Nullable progress) {
-//       
-//   } onSuccess:^(id  _Nullable responseObject) {
-//       NSLog(@"%@",responseObject);
-//   } onFailure:^(NSError * _Nullable error) {
-//        NSLog(@"%@",error);
-//   }];
 }
 -(void)refeshWeiboToken{
 //   [RBNetworkEngine sendChainRequest:^(RBQueueRequest *queueRequest) {

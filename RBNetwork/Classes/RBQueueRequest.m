@@ -88,9 +88,9 @@
 
 - (void)cancelWithBlock:(void (^)())cancelBlock {
     if (_firstRequest && !_nextRequest) {
-        [RBNetworkEngine cancelRequest:_firstRequest.identifier];
+       // [RBNetworkEngine cancelRequest:_firstRequest.identifier];
     } else if (_nextRequest) {
-        [RBNetworkEngine cancelRequest:_nextRequest.identifier];
+       // [RBNetworkEngine cancelRequest:_nextRequest.identifier];
     }
     RB_SAFE_BLOCK(cancelBlock);
 }

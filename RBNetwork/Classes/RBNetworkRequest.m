@@ -82,8 +82,9 @@
 
 
 - (void)clearRequestBlock {
-    //self.completionBlock = nil;
-    //self.progerssBlock = nil;
+    _successBlock = nil;
+    _failureBlock = nil;
+    _progressBlock = nil;
 }
 -(void)dealloc{
     NSLog(@"请求销毁%@",self.class);

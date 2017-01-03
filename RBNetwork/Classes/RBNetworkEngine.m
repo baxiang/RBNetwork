@@ -244,10 +244,9 @@
         }
     };
     [self _startDefaultTask:request];
-    
 }
 
--(NSUInteger)_startDefaultTask:(RBNetworkRequest *)requestTask{
+-(void)_startDefaultTask:(RBNetworkRequest *)requestTask{
     AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:requestTask];
     NSString*urlStr = [self urlStringByRequest:requestTask];
     NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
@@ -257,7 +256,7 @@
             if (requestTask.failureBlock) {
                 requestTask.failureBlock(serializationError);
             }
-            return 0;
+            return ;
         }
     [self constructionURLRequest:request ByRequestTask:requestTask];
     if ([RBNetworkConfig defaultConfig].enableDebug) {
@@ -270,10 +269,10 @@
                                           __strong __typeof(weakSelf)strongSelf = weakSelf;
                                           [self handleResponseResult:dataTask responseObject:responseObject error:error];
                                       }];
-    [requestTask setIdentifier:dataTask.taskIdentifier];
+    requestTask.requestTask = dataTask;
     [dataTask resume];
-    [self addRequestObject:requestTask];
-    return requestTask.identifier;
+    [self _addRequestTask:requestTask];
+   // return requestTask.identifier;
     
 }
 - (void)handleResponseResult:(NSURLSessionTask *)task responseObject:(id)responseObject error:(NSError *)error {
@@ -309,8 +308,6 @@
         requestError = serializationError;
     } else {
         succeed = YES;
-//        succeed = [self validateResult:request error:&validationError];
-//        requestError = validationError;
     }
     RB_SAFE_BLOCK(request.finishBlock,request.responseObject,requestError);
     if (succeed) {
@@ -320,25 +317,15 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-//        [self removeRequestFromRecord:request];
-//        [request clearCompletionBlock];
+        [request clearRequestBlock];
     });
 }
 - (void)requestDidSucceedWithRequest:(RBNetworkRequest *)request {
-    @autoreleasepool {
-       // [request requestCompletePreprocessor];
-    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
-       // [request toggleAccessoriesWillStopCallBack];
-       // [request requestCompleteFilter];
-        
-//        if (request.delegate != nil) {
-//            [request.delegate requestFinished:request];
-//        }
         if (request.successBlock) {
             request.successBlock(request.responseObject);
         }
-        //[request toggleAccessoriesDidStopCallBack];
     });
 }
 
@@ -361,20 +348,11 @@
         request.responseObject = nil;
     }
     
-    @autoreleasepool {
-       // [request requestFailedPreprocessor];
-    }
     dispatch_async(dispatch_get_main_queue(), ^{
-//        [request toggleAccessoriesWillStopCallBack];
-//        [request requestFailedFilter];
-//        
-//        if (request.delegate != nil) {
-//            [request.delegate requestFailed:request];
-//        }
         if (request.failureBlock) {
             request.failureBlock(error);
         }
-//        [request toggleAccessoriesDidStopCallBack];
+
     });
 }
 - (BOOL)validateResult:(RBNetworkRequest *)request error:(NSError * _Nullable __autoreleasing *)error {
@@ -389,20 +367,9 @@
 }
 
 
-- (void)cancelTask:(RBNetworkRequest *)requestTask{
-    //[requestTask.sessionTask cancel];
-    [self removeRequestObject:requestTask];
-    [requestTask clearRequestBlock];
-}
--(void)cancelAllTask{
-    NSDictionary *copyRecorddDict = [_requestRecordDict  copy];
-   [copyRecorddDict enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, __kindof RBNetworkRequest * _Nonnull requestTask, BOOL * _Nonnull stop) {
-       [self cancelTask:requestTask];
-   }];
-}
 #pragma mark upload
 
-- (NSInteger)_startUploadTask:(RBNetworkRequest *)uploadTask{
+- (void)_startUploadTask:(RBNetworkRequest *)uploadTask{
        AFHTTPRequestSerializer *requestSerializer = [self requestSerializerByRequestTask:uploadTask];
        NSString*urlStr = [self urlStringByRequest:uploadTask];
        NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
@@ -434,7 +401,7 @@
         if (uploadTask.failureBlock) {
             uploadTask.failureBlock(error);
         }
-          return 0;
+          return ;
        }
         request.timeoutInterval = uploadTask.requestTimeout;
         __block  NSURLSessionUploadTask *uploadDataTask = nil;
@@ -447,29 +414,29 @@
             }completionHandler:^(NSURLResponse * _Nonnull response, id  _Nonnull responseObject, NSError * _Nonnull error){
                  [self handleResponseResult:uploadDataTask responseObject:responseObject error:error];
             }];
-    [uploadTask setIdentifier:uploadDataTask.taskIdentifier];
+    uploadTask.requestTask = uploadDataTask;
     [uploadDataTask resume];
-    [self addRequestObject:uploadTask];
-    return uploadTask.identifier;
+    [self _addRequestTask:uploadTask];
+    //return uploadTask.identifier;
     
 }
 
-- (void)addRequestObject:(__kindof RBNetworkRequest*)request {
+- (void)_addRequestTask:(__kindof RBNetworkRequest*)request {
     if (request == nil)    return;
     Lock();
-    _requestRecordDict[@(request.identifier)] = request;;
+    _requestRecordDict[@(request.requestTask.taskIdentifier)] = request;;
     Unlock();
 }
 
-- (void)removeRequestObject:(__kindof RBNetworkRequest*)request {
+- (void)_removeRequestTask:(__kindof RBNetworkRequest*)request {
     if(request == nil)  return;
     Lock();
-     [_requestRecordDict removeObjectForKey:@(request.identifier)];
+    [_requestRecordDict removeObjectForKey:@(request.requestTask.taskIdentifier)];
     Unlock();
 }
 
 #pragma mark download
--(NSInteger)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
+-(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
     NSString*downloadURL = [self urlStringByRequest:downloadRequest];
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadURL]];
     if (downloadRequest.requestHeaders.count > 0) {
@@ -525,11 +492,9 @@
                             [self handleResponseResult:downloadTask responseObject:filePath error:error];
                         }];
     }
-    [downloadRequest setIdentifier:downloadTask.taskIdentifier];
+    downloadRequest.requestTask = downloadTask;
     [downloadTask resume];
-    
-    return downloadRequest.identifier;
-
+    [self _addRequestTask:downloadRequest];
 }
 - (NSURL *)incompleteDownloadTempPathForDownloadPath:(NSString *)downloadPath {
     NSString *tempPath = nil;
@@ -553,27 +518,28 @@
 }
 
 
-+ (void)cancelRequest:(NSUInteger)identifier {
-    [self cancelRequest:identifier onCancel:nil];
+- (void)cancelRequest:(RBNetworkRequest *)request {
+    NSParameterAssert(request != nil);
+    [request.requestTask cancel];
+    [self _removeRequestTask:request];
+    [request clearRequestBlock];
 }
 
-+ (void)cancelRequest:(NSUInteger)identifier
-             onCancel:(nullable RBCancelBlock)cancelBlock {
-    RBNetworkRequest *request = [[RBNetworkEngine defaultEngine] cancelRequestByIdentifier:identifier];
-    RB_SAFE_BLOCK(cancelBlock, request);
-}
-- (nullable RBNetworkRequest *)cancelRequestByIdentifier:(NSUInteger)identifier {
-    if (identifier == 0) return nil;
-    __block RBNetworkRequest *request = nil;
+- (void)cancelAllRequests {
     Lock();
-    [self.sessionManager.tasks enumerateObjectsUsingBlock:^(NSURLSessionTask *task, NSUInteger idx, BOOL *stop) {
-        if (task.taskIdentifier == identifier) {
-            [task cancel];
-            *stop = YES;
-        }
-    }];
+    NSArray *allKeys = [_requestRecordDict allKeys];
     Unlock();
-    return request;
+    if (allKeys && allKeys.count > 0) {
+        NSArray *copiedKeys = [allKeys copy];
+        for (NSNumber *key in copiedKeys) {
+            Lock();
+            RBNetworkRequest *request = _requestRecordDict[key];
+            Unlock();
+            // We are using non-recursive lock.
+            // Do not lock `stop`, otherwise deadlock may occur.
+            //[request stop];
+        }
+    }
 }
 
 @end

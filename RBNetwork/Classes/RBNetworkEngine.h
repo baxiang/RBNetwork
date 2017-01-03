@@ -23,6 +23,6 @@
                            onSuccess:(nullable RBBatchSuccessBlock)successBlock
                            onFailure:(nullable RBBatchFailureBlock)failureBlock;
 
-+ (void)cancelRequest:(NSUInteger)identifier;
+
 
 @end
