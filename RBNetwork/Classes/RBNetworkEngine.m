@@ -61,7 +61,6 @@
     OSSpinLock _lock;
     AFJSONResponseSerializer *_jsonResponseSerializer;
     AFXMLParserResponseSerializer *_xmlResponseSerialzier;
-    NSIndexSet *_allStatusCodes;
 }
 
 + (RBNetworkEngine *)defaultEngine
@@ -88,8 +87,6 @@
         
         _lock = dispatch_semaphore_create(1);
         _lock = OS_SPINLOCK_INIT;
-        [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
-         _allStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
     }
     return self;
 }
@@ -99,11 +96,8 @@
 }
 
 #pragma mark network config 请求配置
-
-
-
-- (void)_setRequestSerializerByRequestSerializerType:(RBRequestSerializerType)requestSerializerType {
-    switch (requestSerializerType) {
+- (void)_requestSerializerByRequest:(__kindof RBNetworkRequest *)request {
+    switch (request.requestSerializerType) {
         case RBRequestSerializerTypeHTTP:
             self.sessionManager.requestSerializer = [AFHTTPRequestSerializer serializer];
             break;
@@ -122,13 +116,6 @@
     }
 }
 
-- (AFHTTPResponseSerializer *)responseSerializerByRequestTask:(__kindof RBNetworkRequest *)requestTask {
-    if (requestTask.responseSerializerType == RBResponseSerializerTypeHTTP) {
-        return self.sessionManager.responseSerializer;
-    } else if (requestTask.responseSerializerType == RBResponseSerializerTypeJSON) {
-        return [AFJSONResponseSerializer serializer];
-    }
-}
 - (NSString *)urlStringByRequest:(__kindof RBNetworkRequest *)request {
     NSString *detailUrl = request.requestURL;
     if ([detailUrl hasPrefix:@"http"]) {
@@ -165,18 +152,44 @@
     }];
 }
 
+- (void)_responseSerializerByRequest:(__kindof RBNetworkRequest *)request {
+    switch (request.responseSerializerType) {
+        case RBResponseSerializerTypeHTTP:
+            self.sessionManager.responseSerializer = [AFHTTPResponseSerializer serializer];
+            break;
+        case RBResponseSerializerTypeJSON:
+            if (![self.sessionManager.responseSerializer isKindOfClass:[AFJSONResponseSerializer class]]) {
+                self.sessionManager.responseSerializer = _jsonResponseSerializer;
+            }
+            break;
+        case RBResponseSerializerTypeXML:
+            if (![self.sessionManager.responseSerializer isKindOfClass:[AFXMLParserResponseSerializer class]]) {
+                self.sessionManager.responseSerializer = _xmlResponseSerialzier;
+            }
+            break;
+        case RBResponseSerializerTypePropertyList:
+            if (![self.sessionManager.responseSerializer isKindOfClass:[AFPropertyListResponseSerializer class]]) {
+                self.sessionManager.responseSerializer = [AFPropertyListResponseSerializer serializer];
+            }
+            break;
+        default:
+            break;
+    }
+    self.sessionManager.responseSerializer.acceptableStatusCodes = request.acceptableStatusCodes;
+    self.sessionManager.responseSerializer.acceptableContentTypes = request.acceptableContentTypes;
+}
+
 - (AFJSONResponseSerializer *)jsonResponseSerializer {
     if (!_jsonResponseSerializer) {
         _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
         _jsonResponseSerializer.removesKeysWithNullValues = YES;
-        _jsonResponseSerializer.acceptableStatusCodes = _allStatusCodes;
+        
     }
     return _jsonResponseSerializer;
 }
 - (AFXMLParserResponseSerializer *)xmlParserResponseSerialzier {
     if (!_xmlResponseSerialzier) {
         _xmlResponseSerialzier = [AFXMLParserResponseSerializer serializer];
-        _xmlResponseSerialzier.acceptableStatusCodes = _allStatusCodes;
     }
     return _xmlResponseSerialzier;
 }
@@ -250,7 +263,7 @@
 }
 
 -(void)_startDefaultTask:(RBNetworkRequest *)requestTask{
-    [self _setRequestSerializerByRequestSerializerType:requestTask.requestSerializerType];
+    [self _requestSerializerByRequest:requestTask];
     NSString*urlStr = [self urlStringByRequest:requestTask];
     NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
     NSError *serializationError = nil;
@@ -290,7 +303,6 @@
         request.responseData = responseObject;
         switch (request.responseSerializerType) {
             case RBResponseSerializerTypeHTTP:
-                // Default serializer. Do nothing.
                 break;
             case RBResponseSerializerTypeJSON:
                 request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
@@ -368,7 +380,7 @@
 #pragma mark upload
 
 - (void)_startUploadTask:(RBNetworkRequest *)uploadTask{
-      [self _setRequestSerializerByRequestSerializerType:uploadTask.requestSerializerType];
+      [self _requestSerializerByRequest:uploadTask];
        NSString*urlStr = [self urlStringByRequest:uploadTask];
        NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
       __block NSError *serializationError = nil;

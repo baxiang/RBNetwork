@@ -54,7 +54,8 @@ typedef NS_ENUM(NSInteger , RBRequestSerializerType) {
 typedef NS_ENUM(NSInteger , RBResponseSerializerType) {
     RBResponseSerializerTypeHTTP = 0,
     RBResponseSerializerTypeJSON,
-    RBResponseSerializerTypeXML
+    RBResponseSerializerTypeXML,
+    RBResponseSerializerTypePropertyList
 };
 typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityLow = -4L,
@@ -110,10 +111,15 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
  *  网络请求的最大队列数量 5
  */
 @property (nonatomic, assign) NSInteger maxConcurrentOperationCount;
+
+/**
+ https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html 默认是200-500
+ */
+@property (nonatomic, copy, nullable) NSIndexSet *defaultAcceptableStatusCodes;
 /**
  *   默认：[NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html", nil]
  */
-@property (nonatomic, copy,nullable) NSSet<NSString *> *acceptableContentTypes;
+@property (nonatomic, copy,nullable) NSSet<NSString *> *defaultAcceptableContentTypes;
 /**
  *  @brief 请求超时时间，默认20秒
  */
@@ -124,7 +130,6 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
  */
 @property (nonatomic,copy,nullable) NSString *downloadFolderPath;
 
-@property (nonatomic, strong,nullable) NSIndexSet *defaultAcceptableStatusCodes;
 /**
  *  @brief 是否打开debug日志，默认打开
  */

@@ -106,14 +106,21 @@
 
 
 /**
+ [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html", nil]
+ */
+@property (nonatomic, copy,nullable) NSSet<NSString *> *acceptableContentTypes;
+
+
+/**
+ 默认是200-500；
+ */
+@property (nonatomic, copy, nullable) NSIndexSet *acceptableStatusCodes;
+
+/**
  返回的状态码
  */
 @property (nonatomic, readwrite, assign) NSInteger responseStatusCode;
 
-/**
- <#Description#>
- */
-@property (nonatomic, copy,nullable)   NSIndexSet *acceptableStatusCodes;
 
 /**
  <#Description#>

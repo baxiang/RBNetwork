@@ -21,7 +21,8 @@
     self = [super init];
     if (self) {
         _defaultRequestMethod = RBRequestMethodGet;
-        _acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
+        _defaultAcceptableStatusCodes =  [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(100, 500)];
+        _defaultAcceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
         _defaultRequestSerializer = RBRequestSerializerTypeHTTP;
         _defaultResponseSerializer = RBResponseSerializerTypeHTTP;
         _defaultTimeoutInterval = RB_REQUEST_TIMEOUT;

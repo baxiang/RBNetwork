@@ -18,6 +18,8 @@
         _requestTimeout = defaultConfig.defaultTimeoutInterval;
         _requestSerializerType = defaultConfig.defaultRequestSerializer;
         _responseSerializerType = defaultConfig.defaultResponseSerializer;
+        _acceptableContentTypes = defaultConfig.defaultAcceptableContentTypes;
+        _acceptableStatusCodes = defaultConfig.defaultAcceptableStatusCodes;
         _useDefaultHeaders = YES;
         _useDefaultParams = YES;
     }
