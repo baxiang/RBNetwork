@@ -25,14 +25,17 @@
  *  BaseURL
  */
 @property (nonatomic, copy,nullable) NSString *requestBaseURL;
+
 /**
  *  requestURL
  */
 @property (nonatomic, strong,nullable) NSString *requestURL;
+
 /**
  *  request Method
  */
 @property (nonatomic, assign) RBRequestMethod requestMethod;
+
 /**
  *  Timeout 超时时间
  */
@@ -58,12 +61,12 @@
  */
 @property (nonatomic, assign, readonly) BOOL useDefaultParams;
 /**
- <#Description#>
+  Request 序列化类型
  */
 @property (nonatomic, assign) RBRequestSerializerType  requestSerializerType;
 
 /**
- <#Description#>
+ Response 序列化类型
  */
 @property (nonatomic, assign) RBResponseSerializerType responseSerializerType;
 

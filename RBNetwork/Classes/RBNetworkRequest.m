@@ -18,11 +18,11 @@
         _requestTimeout = defaultConfig.defaultTimeoutInterval;
         _requestSerializerType = defaultConfig.defaultRequestSerializer;
         _responseSerializerType = defaultConfig.defaultResponseSerializer;
+        _useDefaultHeaders = YES;
+        _useDefaultParams = YES;
     }
     return self;
 }
-
-
 
 
 - (NSString *)httpMethodString
@@ -90,7 +90,6 @@
 -(void)dealloc{
     NSLog(@"请求销毁%@",self.class);
    [self clearRequestBlock];
-    //_delegate = nil;
 }
 @end
 

@@ -127,7 +127,7 @@
     if ([request.requestBaseURL length] > 0) {
         baseUrlString = request.requestBaseURL;
     } else {
-        baseUrlString = [RBNetworkConfig defaultConfig].baseUrlString;;
+        baseUrlString = [RBNetworkConfig defaultConfig].defaultURL;;
     }
     return [NSString stringWithFormat:@"%@%@",baseUrlString,detailUrl];
 }
@@ -137,7 +137,7 @@
         [temRBict addEntriesFromDictionary:request.requestParameters];
         
     }
-    NSDictionary *baseRequestParamSource = [RBNetworkConfig defaultConfig].baseRequestParams;
+    NSDictionary *baseRequestParamSource = [RBNetworkConfig defaultConfig].defaultParams;
     if (baseRequestParamSource != nil) {
         NSDictionary *mergeDict =[baseRequestParamSource merge:temRBict];
         [temRBict addEntriesFromDictionary:mergeDict];
@@ -145,7 +145,7 @@
     return temRBict;
 }
 -(void)constructionURLRequest:(NSMutableURLRequest *)urlRequest ByRequestTask:(__kindof RBNetworkRequest  *)request{
-    NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].baseRequestHeaders;
+    NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].defaultParams;
     [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [urlRequest setValue:obj forHTTPHeaderField:key];
     }];

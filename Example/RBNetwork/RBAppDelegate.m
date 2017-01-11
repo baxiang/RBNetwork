@@ -26,7 +26,7 @@
 }
 -(void)setupDefaultNetConfig{
      RBNetworkConfig *networkConfig  = [RBNetworkConfig defaultConfig];
-     networkConfig.baseUrlString = @"https://api.weibo.com/2";
+     networkConfig.defaultURL = @"https://api.weibo.com/2";
      networkConfig.defaultResponseSerializer = RBResponseSerializerTypeJSON;
 }
 - (void)applicationWillResignActive:(UIApplication *)application
