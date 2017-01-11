@@ -20,13 +20,14 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _defaultRequestMethod = RBRequestMethodGet;
         _acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
         _defaultRequestSerializer = RBRequestSerializerTypeHTTP;
         _defaultResponseSerializer = RBResponseSerializerTypeHTTP;
-        _defaultTimeoutInterval = 20.0f;
-        _enableDebug = YES;
+        _defaultTimeoutInterval = RB_REQUEST_TIMEOUT;
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];
-        _maxConcurrentOperationCount = 4;
+        _maxConcurrentOperationCount = RB_MAX_HTTP_CONNECTION;
+        _enableDebug = YES;
     }
     return self;
 }

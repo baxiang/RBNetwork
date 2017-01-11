@@ -28,6 +28,10 @@ NSLog((@"crush in debug :%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##_
 if(BlockName){\
    BlockName(__VA_ARGS__);\
 }
+// 默认的请求超时时间
+#define RB_REQUEST_TIMEOUT     20.0f
+// 每个host最大连接数
+#define RB_MAX_HTTP_CONNECTION  5
 
 typedef NS_ENUM(NSUInteger, RBRequestMethod)
 {
@@ -81,27 +85,32 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
 
 + (nullable RBNetworkConfig *)defaultConfig;
 /**
- *  url 请求的URL
+ *   请求的URL
  */
-@property (nonatomic, copy,nullable) NSString *baseUrlString;
+@property (nonatomic, copy,nullable) NSString *defaultURL;
 /**
- *  header 请求头
+ *   默认的请求头
  */
-@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>*  baseRequestHeaders;
+@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>* defaultHeaders;
 /**
- *  params 请求参数
+ *  默认的请求参数
  */
-@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>*  baseRequestParams;
+@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>* defaultParams;
+
 /**
- *   默认RBRequestSerializerTypeHTTP（
+  默认的请求方法
+ */
+@property (nonatomic, assign) RBRequestMethod defaultRequestMethod;
+/**
+ *   默认  RBRequestSerializerTypeHTTP
  */
 @property (nonatomic, assign) RBRequestSerializerType  defaultRequestSerializer;
 /**
- *  默认返回数据类型 RBResponseSerializerTypeJSON
+ *  默认返回数据类型 RBResponseSerializerTypeHTTP
  */
 @property (nonatomic, assign) RBResponseSerializerType defaultResponseSerializer;
 /**
- *  网络请求的最大队列数量
+ *  网络请求的最大队列数量 5
  */
 @property (nonatomic, assign) NSInteger maxConcurrentOperationCount;
 /**
@@ -112,6 +121,7 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
  *  @brief 请求超时时间，默认20秒
  */
 @property (nonatomic, assign,) NSTimeInterval defaultTimeoutInterval;
+
 /**
  *  下载数据的路径
  */

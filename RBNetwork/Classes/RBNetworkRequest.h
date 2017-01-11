@@ -34,14 +34,29 @@
  */
 @property (nonatomic, assign) RBRequestMethod requestMethod;
 /**
- *  Timeout
+ *  Timeout 超时时间
  */
 @property (nonatomic, assign) NSTimeInterval requestTimeout;
 
 /**
-  parameters 请求参数
+ 请求header
+ */
+@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*requestHeaders;
+
+/**
+ 是否使用RBNetworkConfig 中defaultHeaders  默认是YES
+ */
+@property (nonatomic, assign, readonly) BOOL useDefaultHeaders;
+
+/**
+   请求参数
  */
 @property (nonatomic,strong,nullable)  NSDictionary *requestParameters;
+
+/**
+ 是否使用RBNetworkConfig 中defaultParams 默认是YES
+ */
+@property (nonatomic, assign, readonly) BOOL useDefaultParams;
 /**
  <#Description#>
  */
@@ -51,11 +66,6 @@
  <#Description#>
  */
 @property (nonatomic, assign) RBResponseSerializerType responseSerializerType;
-
-/**
- 请求头
- */
-@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*requestHeaders;
 
 /**
  下载的存储路径

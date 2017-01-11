@@ -13,10 +13,11 @@
 
 -(instancetype)init{
     if (self = [super init]) {
-        _requestMethod = RBRequestMethodPost;
-        self.requestTimeout = [RBNetworkConfig defaultConfig].defaultTimeoutInterval;
-        self.requestSerializerType = [RBNetworkConfig defaultConfig].defaultRequestSerializer;
-        self.responseSerializerType = [RBNetworkConfig defaultConfig].defaultResponseSerializer;
+        RBNetworkConfig *defaultConfig = [RBNetworkConfig defaultConfig];
+        _requestMethod = defaultConfig.defaultRequestMethod;
+        _requestTimeout = defaultConfig.defaultTimeoutInterval;
+        _requestSerializerType = defaultConfig.defaultRequestSerializer;
+        _responseSerializerType = defaultConfig.defaultResponseSerializer;
     }
     return self;
 }
