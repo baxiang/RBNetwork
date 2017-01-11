@@ -10,6 +10,7 @@
 #import "RBNetworkEngine.h"
 
 @interface RBQueueRequest : NSObject
+
 @property (nonatomic, strong, readonly,nullable) RBNetworkRequest *firstRequest;
 @property (nonatomic, strong, readonly,nullable) RBNetworkRequest *nextRequest;
 - (nullable RBQueueRequest *)onFirst:(nullable RBRequestBlock)firstBlock;

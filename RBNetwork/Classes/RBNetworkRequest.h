@@ -15,7 +15,7 @@
 /**
  requestTask
  */
-@property (nonatomic, strong) NSURLSessionTask *requestTask;
+@property (nonatomic, strong,nullable) NSURLSessionTask *requestTask;
 
 /**
  请求的类型
