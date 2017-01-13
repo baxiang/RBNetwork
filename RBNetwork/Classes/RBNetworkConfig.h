@@ -79,6 +79,7 @@ typedef void (^RBBatchSuccessBlock)(NSArray<id> * _Nullable responseObjects);
 typedef void (^RBBatchFailureBlock)(NSArray<id> * _Nullable errors);
 typedef void (^RBQueueRequestBlock)( RBQueueRequest *_Nullable queueRequest);
 typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullable responseObject, BOOL *_Nullable sendNext);
+
 @interface RBNetworkConfig : NSObject
 
 + (nullable RBNetworkConfig *)defaultConfig;

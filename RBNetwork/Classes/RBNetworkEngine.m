@@ -12,11 +12,13 @@
 #import "RBNetworkLogger.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <libkern/OSAtomic.h>
-#import  <objc/runtime.h>
-#import "RBNetworkUtilities.h"
+//#import  <objc/runtime.h>
 #import "RBNetworkUtilities.h"
 #import <pthread/pthread.h>
 #import "AFNetworkActivityIndicatorManager.h"
+
+typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
+
 @interface NSDictionary (RBNetworkEngine)
 - (NSMutableDictionary *)merge:(NSDictionary *)dict;
 @end
@@ -90,72 +92,138 @@
     return self;
 }
 
+- (AFJSONResponseSerializer *)jsonResponseSerializer {
+    if (!_jsonResponseSerializer) {
+        _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
+        _jsonResponseSerializer.removesKeysWithNullValues = YES;
+        
+    }
+    return _jsonResponseSerializer;
+}
+- (AFXMLParserResponseSerializer *)xmlParserResponseSerialzier {
+    if (!_xmlResponseSerialzier) {
+        _xmlResponseSerialzier = [AFXMLParserResponseSerializer serializer];
+    }
+    return _xmlResponseSerialzier;
+}
+
 - (NSInteger)networkReachability {
     return [AFNetworkReachabilityManager sharedManager].networkReachabilityStatus;
 }
 
 #pragma mark network config 请求配置
 
--(void)_constructRequestConfigByRequest:(__kindof RBNetworkRequest  *)request{
-    if (request.url.length == 0) {
-        if (request.server.length == 0) {
-            request.server =  [RBNetworkConfig defaultConfig].defaultURL;
+- (NSString *)httpMethodStringByRequest:(__kindof RBNetworkRequest  *)request
+{
+    NSString *method = nil;
+    switch (request.method)
+    {
+        case RBRequestMethodGet:
+            method = @"GET";
+            break;
+        case RBRequestMethodPost:
+            method = @"POST";
+            break;
+        case RBRequestMethodPut:
+            method = @"PUT";
+            break;
+        case RBRequestMethodDelete:
+            method = @"DELETE";
+            break;
+        case RBRequestMethodOptions:
+            method = @"OPTIONS";
+            break;
+        case RBRequestMethodHead:
+            method = @"HEAD";
+            break;
+        default:
+            method = @"GET";
+            break;
+    }
+    return method;
+}
+
+
+-(NSMutableURLRequest *)_constructRequestConfigByRequest:(__kindof RBNetworkRequest *)requestTask bodyWithBlock:(void(^)(id<AFMultipartFormData> _Nonnull formData))formDataBlock{
+    if (requestTask.url.length == 0) {
+        if (requestTask.server.length == 0) {
+            requestTask.server =  [RBNetworkConfig defaultConfig].defaultURL;
         }
-        if (request.api.length > 0) {
-            NSURL *baseURL = [NSURL URLWithString:request.server];
+        if (requestTask.api.length > 0) {
+            NSURL *baseURL = [NSURL URLWithString:requestTask.server];
             // ensure terminal slash for baseURL path, so that NSURL +URLWithString:relativeToURL: works as expected.
             if ([[baseURL path] length] > 0 && ![[baseURL absoluteString] hasSuffix:@"/"]) {
                 baseURL = [baseURL URLByAppendingPathComponent:@""];
             }
-            request.url = [[NSURL URLWithString:request.api relativeToURL:baseURL] absoluteString];
+            requestTask.url = [[NSURL URLWithString:requestTask.api relativeToURL:baseURL] absoluteString];
         } else {
-            request.url = request.server;
+            requestTask.url = requestTask.server;
         }
     }
-    NSAssert(request.url.length > 0, @"The request url can't be null.");
+    NSAssert(requestTask.url.length > 0, @"The request url can't be null.");
     
-    if (request.addDefaultParameters) {
+    if (requestTask.addDefaultParameters) {
         NSDictionary *defaultParameter  = [RBNetworkConfig defaultConfig].defaultParameters;
         if (defaultParameter.count>0) {
             NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
             [parameters addEntriesFromDictionary:defaultParameter];
-            if (request.parameters.count) {
-                [parameters addEntriesFromDictionary:request.parameters];
+            if (requestTask.parameters.count) {
+                [parameters addEntriesFromDictionary:requestTask.parameters];
             }
-            request.parameters = parameters;
+            requestTask.parameters = parameters;
         }
     }
     
-    if (request.addDefaultHeaders) {
+    if (requestTask.addDefaultHeaders) {
         NSDictionary *defaultHeaders  = [RBNetworkConfig defaultConfig].defaultHeaders;
         if (defaultHeaders.count>0) {
             NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
             [parameters addEntriesFromDictionary:defaultHeaders];
-            if (request.headers.count) {
-                [parameters addEntriesFromDictionary:request.headers];
+            if (requestTask.headers.count) {
+                [parameters addEntriesFromDictionary:requestTask.headers];
             }
-            request.headers = parameters;
+            requestTask.headers = parameters;
         }
     }
-    
-    switch (request.requestSerializerType) {
+    AFHTTPRequestSerializer *requestSerializer = self.sessionManager;
+    switch (requestTask.requestSerializerType) {
         case RBRequestSerializerTypeHTTP:
-            self.sessionManager.requestSerializer = [AFHTTPRequestSerializer serializer];
+            requestSerializer= [AFHTTPRequestSerializer serializer];
             break;
         case RBRequestSerializerTypeJSON:
-            if (![self.sessionManager.requestSerializer isKindOfClass:[AFJSONRequestSerializer class]]) {
-                self.sessionManager.requestSerializer = [AFJSONRequestSerializer serializer];
+            if (![requestSerializer isKindOfClass:[AFJSONRequestSerializer class]]) {
+                requestSerializer = [AFJSONRequestSerializer serializer];
             }
             break;
         case RBRequestSerializerTypePropertyList:
-            if (![self.sessionManager.requestSerializer isKindOfClass:[AFPropertyListRequestSerializer class]]) {
-                self.sessionManager.requestSerializer = [AFPropertyListRequestSerializer serializer];
+            if (![requestSerializer isKindOfClass:[AFPropertyListRequestSerializer class]]) {
+                requestSerializer = [AFPropertyListRequestSerializer serializer];
             }
             break;
         default:
             break;
     }
-
+    NSString *methodString = [self httpMethodStringByRequest:requestTask];
+    NSError *serializationError = nil;
+    NSMutableURLRequest *request = nil;
+    if (formDataBlock) {
+       request = [requestSerializer multipartFormRequestWithMethod:methodString URLString:requestTask.url parameters:requestTask.parameters constructingBodyWithBlock:formDataBlock error:&serializationError];
+    }else{
+       request = [requestSerializer requestWithMethod:methodString URLString:requestTask.url parameters:requestTask.parameters error:&serializationError];
+    }
+    if (serializationError) {
+        if (requestTask.failureBlock) {
+            requestTask.failureBlock(serializationError);
+        }
+        return  request;
+    }
+    if (requestTask.headers.count > 0) {
+        [requestTask.headers enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+            [request setValue:value forHTTPHeaderField:field];
+        }];
+    }
+    request.timeoutInterval = requestTask.timeout;
+    return  request;
 }
 
 - (void)_responseSerializerByRequest:(__kindof RBNetworkRequest *)request {
@@ -185,20 +253,7 @@
     self.sessionManager.responseSerializer.acceptableContentTypes = request.acceptableContentTypes;
 }
 
-- (AFJSONResponseSerializer *)jsonResponseSerializer {
-    if (!_jsonResponseSerializer) {
-        _jsonResponseSerializer = [AFJSONResponseSerializer serializer];
-        _jsonResponseSerializer.removesKeysWithNullValues = YES;
-        
-    }
-    return _jsonResponseSerializer;
-}
-- (AFXMLParserResponseSerializer *)xmlParserResponseSerialzier {
-    if (!_xmlResponseSerialzier) {
-        _xmlResponseSerialzier = [AFXMLParserResponseSerializer serializer];
-    }
-    return _xmlResponseSerialzier;
-}
+
 
 - (void)_constructRequest:(RBNetworkRequest *)request
                onProgress:(RBProgressBlock)progressBlock
@@ -268,15 +323,7 @@
 }
 
 -(void)_startDefaultTask:(RBNetworkRequest *)requestTask{
-    [self _constructRequestConfigByRequest:requestTask];
-    NSError *serializationError = nil;
-    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:requestTask.url parameters:requestTask.parameters error:&serializationError];
-    if (serializationError) {
-            if (requestTask.failureBlock) {
-                requestTask.failureBlock(serializationError);
-            }
-            return;
-        }
+    NSMutableURLRequest *request =  [self _constructRequestConfigByRequest:requestTask bodyWithBlock:nil];
     __block NSURLSessionDataTask *dataTask = nil;
     __weak __typeof(self)weakSelf = self;
     dataTask = [self.sessionManager dataTaskWithRequest:request
@@ -379,38 +426,29 @@
 #pragma mark upload
 
 - (void)_startUploadTask:(RBNetworkRequest *)uploadTask{
-      [self _constructRequestConfigByRequest:uploadTask];
-      __block NSError *serializationError = nil;
-      NSMutableURLRequest *request = [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.url parameters:uploadTask.parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
-       [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
-           if (obj.fileData) {
-               if (obj.fileName && obj.mimeType) {
-                   [formData appendPartWithFileData:obj.fileData name:obj.name fileName:obj.fileName mimeType:obj.mimeType];
-               } else {
-                   [formData appendPartWithFormData:obj.fileData name:obj.name];
-               }
-           } else if (obj.fileURL) {
-               NSError *fileError = nil;
-               if (obj.fileName && obj.mimeType) {
-                   [formData appendPartWithFileURL:obj.fileURL name:obj.name fileName:obj.fileName mimeType:obj.mimeType error:&fileError];
-               } else {
-                   [formData appendPartWithFileURL:obj.fileURL name:obj.name error:&fileError];
-               }
-               if (fileError) {
-                   serializationError = fileError;
-                   *stop = YES;
-               }
-           }
-       }];
-    } error:&serializationError];
-      if (serializationError) {
-        NSError *error =[NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestSendFailure description:@"上传文件失败"];
-        if (uploadTask.failureBlock) {
-            uploadTask.failureBlock(error);
-        }
-          return ;
-       }
-        request.timeoutInterval = uploadTask.timeout;
+    RBConstructingFormDataBlock formDataBlock =  ^( id <AFMultipartFormData> formData) {
+        [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
+            if (obj.fileData) {
+                if (obj.fileName && obj.mimeType) {
+                    [formData appendPartWithFileData:obj.fileData name:obj.name fileName:obj.fileName mimeType:obj.mimeType];
+                } else {
+                    [formData appendPartWithFormData:obj.fileData name:obj.name];
+                }
+            } else if (obj.fileURL) {
+                NSError *fileError = nil;
+                if (obj.fileName && obj.mimeType) {
+                    [formData appendPartWithFileURL:obj.fileURL name:obj.name fileName:obj.fileName mimeType:obj.mimeType error:&fileError];
+                } else {
+                    [formData appendPartWithFileURL:obj.fileURL name:obj.name error:&fileError];
+                }
+                if (fileError) {
+                    *stop = YES;
+                }
+            }
+        }];
+    
+      };
+      NSMutableURLRequest  *request =[self _constructRequestConfigByRequest:uploadTask bodyWithBlock:formDataBlock];
         __block  NSURLSessionUploadTask *uploadDataTask = nil;
           uploadDataTask = [self.sessionManager uploadTaskWithStreamedRequest:request  progress:^(NSProgress *progress){
                 if (uploadTask.progressBlock) {
@@ -424,37 +462,12 @@
     uploadTask.requestTask = uploadDataTask;
     [uploadDataTask resume];
     [self _addRequestTask:uploadTask];
-    //return uploadTask.identifier;
-    
 }
 
-- (void)_addRequestTask:(__kindof RBNetworkRequest*)request {
-    if (request == nil)    return;
-    Lock();
-    _requestRecordDict[@(request.requestTask.taskIdentifier)] = request;;
-    Unlock();
-}
-
-- (void)_removeRequestTask:(__kindof RBNetworkRequest*)request {
-    if(request == nil)  return;
-    Lock();
-    [_requestRecordDict removeObjectForKey:@(request.requestTask.taskIdentifier)];
-    Unlock();
-}
 
 #pragma mark download
 -(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
-    [self _constructRequestConfigByRequest:downloadRequest];
-    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadRequest.url]];
-    if (downloadRequest.headers.count > 0) {
-        [downloadRequest.headers enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
-            //if (![urlRequest valueForHTTPHeaderField:field]) {
-            [urlRequest setValue:value forHTTPHeaderField:field];
-            //}
-        }];
-    }
-    urlRequest.timeoutInterval = downloadRequest.timeout;
-    
+    NSMutableURLRequest *urlRequest = [self _constructRequestConfigByRequest:downloadRequest bodyWithBlock:nil];
     NSURL *downloadFileSavePath;
     BOOL isDirectory;
     if(![[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.downloadSavePath isDirectory:&isDirectory]) {
@@ -475,8 +488,6 @@
     BOOL canBeResumed = resumeDataFileExists && resumeDataIsValid;
     BOOL resumeSucceeded = NO;
     __block NSURLSessionDownloadTask *downloadTask = nil;
-    // Try to resume with resumeData.
-    // Even though we try to validate the resumeData, this may still fail and raise excecption.
     if (canBeResumed) {
         @try {
             downloadTask = [self.sessionManager downloadTaskWithResumeData:data progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
@@ -487,7 +498,6 @@
                             }];
             resumeSucceeded = YES;
         } @catch (NSException *exception) {
-            //YTKLog(@"Resume download failed, reason = %@", exception.reason);
             resumeSucceeded = NO;
         }
     }
@@ -525,6 +535,21 @@
 }
 
 
+- (void)_addRequestTask:(__kindof RBNetworkRequest*)request {
+    if (request == nil)    return;
+    Lock();
+    _requestRecordDict[@(request.requestTask.taskIdentifier)] = request;;
+    Unlock();
+}
+
+- (void)_removeRequestTask:(__kindof RBNetworkRequest*)request {
+    if(request == nil)  return;
+    Lock();
+    [_requestRecordDict removeObjectForKey:@(request.requestTask.taskIdentifier)];
+    Unlock();
+}
+
+
 - (void)cancelRequest:(RBNetworkRequest *)request {
     NSParameterAssert(request != nil);
     [request.requestTask cancel];
@@ -543,9 +568,6 @@
             RBNetworkRequest *request = _requestRecordDict[key];
             Unlock();
             [self cancelRequest:request];
-            // We are using non-recursive lock.
-            // Do not lock `stop`, otherwise deadlock may occur.
-            //[request stop];
         }
     }
 }

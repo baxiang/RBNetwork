@@ -27,35 +27,6 @@
 }
 
 
-- (NSString *)httpMethodString
-{
-    NSString *method = nil;
-    switch (self.method)
-    {
-        case RBRequestMethodGet:
-            method = @"GET";
-            break;
-        case RBRequestMethodPost:
-            method = @"POST";
-            break;
-        case RBRequestMethodPut:
-            method = @"PUT";
-            break;
-        case RBRequestMethodDelete:
-            method = @"DELETE";
-            break;
-        case RBRequestMethodOptions:
-            method = @"OPTIONS";
-            break;
-        case RBRequestMethodHead:
-            method = @"HEAD";
-            break;
-        default:
-            method = @"GET";
-            break;
-    }
-    return method;
-}
 
 
 - (NSMutableArray<RBUploadFormData *> *)uploadFormDatas {

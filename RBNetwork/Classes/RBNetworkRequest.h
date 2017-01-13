@@ -148,7 +148,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addFormDataWithName:(nonnull NSString *)name fileURL:(nonnull NSURL *)fileURL;
 - (void)addFormDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileURL:(nonnull NSURL *)fileURL;
 - (void)clearRequestBlock;
-- (nullable NSString *)httpMethodString;
+
 - (BOOL)statusCodeValidator;
 
 @end
