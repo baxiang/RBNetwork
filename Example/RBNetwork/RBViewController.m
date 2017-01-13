@@ -57,21 +57,21 @@
 }
 -(void)fetchPublicTimeline{
     [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
-        request.requestURL = @"/statuses/public_timeline.json";
-        request.requestMethod = RBRequestMethodGet;
-        request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
+        request.api = @"/statuses/public_timeline.json";
+        request.method = RBRequestMethodGet;
+        request.parameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
     } onSuccess:^(id responseObject) {
-        NSLog(@"%@",responseObject);
+        //NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
-        NSLog(@"%@",error);
+       // NSLog(@"%@",error);
     }];
     
 }
 -(void)postWeiboTimeLine{
     [RBNetworkEngine sendRequest:^(RBNetworkRequest *request) {
-        request.requestURL = @"/statuses/public_timeline.json";
-        request.requestMethod = RBRequestMethodGet;
-        request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
+        request.api = @"/statuses/public_timeline.json";
+        request.method = RBRequestMethodGet;
+        request.parameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken]};
     } onSuccess:^(id responseObject) {
         NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
@@ -82,12 +82,12 @@
 }
 -(void)uploadWeiboPhoto{
    [RBNetworkEngine sendRequest:^(RBNetworkRequest * _Nullable request) {
-       request.requestURL = @"/statuses/upload.json";
-       request.requestParameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken],@"status":@"测试图片微博"};
+       request.api = @"/statuses/upload.json";
+       request.parameters = @{@"access_token":[NSString stringWithFormat:@"%@",_weiboToken],@"status":@"测试图片微博"};
        NSString *photoPath  = [[NSBundle mainBundle] pathForResource:@"180" ofType:@"png"];
        [request addFormDataWithName:@"pic" fileURL:[NSURL fileURLWithPath:photoPath]];
-       request.requestType = RBRequestUpload;
-       request.requestMethod = RBRequestMethodPost;
+       request.type = RBRequestUpload;
+       request.method = RBRequestMethodPost;
    } onSuccess:^(id  _Nullable responseObject) {
         NSLog(@"%@",responseObject);
    } onFailure:^(NSError * _Nullable error) {

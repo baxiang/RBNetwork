@@ -14,14 +14,14 @@
 -(instancetype)init{
     if (self = [super init]) {
         RBNetworkConfig *defaultConfig = [RBNetworkConfig defaultConfig];
-        _requestMethod = defaultConfig.defaultRequestMethod;
-        _requestTimeout = defaultConfig.defaultTimeoutInterval;
+        _method = defaultConfig.defaultRequestMethod;
+        _timeout = defaultConfig.defaultTimeoutInterval;
         _requestSerializerType = defaultConfig.defaultRequestSerializer;
         _responseSerializerType = defaultConfig.defaultResponseSerializer;
         _acceptableContentTypes = defaultConfig.defaultAcceptableContentTypes;
         _acceptableStatusCodes = defaultConfig.defaultAcceptableStatusCodes;
-        _useDefaultHeaders = YES;
-        _useDefaultParams = YES;
+        _addDefaultHeaders = YES;
+        _addDefaultParams = YES;
     }
     return self;
 }
@@ -30,7 +30,7 @@
 - (NSString *)httpMethodString
 {
     NSString *method = nil;
-    switch (self.requestMethod)
+    switch (self.method)
     {
         case RBRequestMethodGet:
             method = @"GET";
@@ -56,6 +56,8 @@
     }
     return method;
 }
+
+
 - (NSMutableArray<RBUploadFormData *> *)uploadFormDatas {
     if (!_uploadFormDatas) {
         _uploadFormDatas = [NSMutableArray array];

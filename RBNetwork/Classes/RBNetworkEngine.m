@@ -115,38 +115,43 @@
     }
 }
 
-- (NSString *)urlStringByRequest:(__kindof RBNetworkRequest *)request {
-    NSString *detailUrl = request.requestURL;
-    if ([detailUrl hasPrefix:@"http"]) {
-        return detailUrl;
+- (void)urlStringByRequest:(__kindof RBNetworkRequest *)request {
+    if (request.url.length == 0) {
+        if (request.server.length == 0) {
+            request.server =  [RBNetworkConfig defaultConfig].defaultURL;
+        }
+        if (request.api.length > 0) {
+            NSURL *baseURL = [NSURL URLWithString:request.server];
+            // ensure terminal slash for baseURL path, so that NSURL +URLWithString:relativeToURL: works as expected.
+            if ([[baseURL path] length] > 0 && ![[baseURL absoluteString] hasSuffix:@"/"]) {
+                baseURL = [baseURL URLByAppendingPathComponent:@""];
+            }
+            request.url = [[NSURL URLWithString:request.api relativeToURL:baseURL] absoluteString];
+        } else {
+            request.url = request.server;
+        }
     }
-    NSString *baseUrlString;
-    if ([request.requestBaseURL length] > 0) {
-        baseUrlString = request.requestBaseURL;
-    } else {
-        baseUrlString = [RBNetworkConfig defaultConfig].defaultURL;;
-    }
-    return [NSString stringWithFormat:@"%@%@",baseUrlString,detailUrl];
+    NSAssert(request.url.length > 0, @"The request url can't be null.");
 }
 - (NSDictionary *)requestParamByRequest:(__kindof RBNetworkRequest  *)request {
-    NSMutableDictionary *temRBict = [[NSMutableDictionary alloc] init];
-    if (request.requestParameters&&[request.requestParameters isKindOfClass:[NSDictionary class]]) {
-        [temRBict addEntriesFromDictionary:request.requestParameters];
-        
+    if (request.addDefaultParameters) {
+        NSDictionary *defaultParameter  = [RBNetworkConfig defaultConfig].defaultParameters;
+        if (defaultParameter.count>0) {
+            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+            [parameters addEntriesFromDictionary:defaultParameter];
+            if (request.parameters.count > 0) {
+                [parameters addEntriesFromDictionary:request.parameters];
+            }
+            request.parameters = parameters;
+        }
     }
-    NSDictionary *baseRequestParamSource = [RBNetworkConfig defaultConfig].defaultParams;
-    if (baseRequestParamSource != nil) {
-        NSDictionary *mergeDict =[baseRequestParamSource merge:temRBict];
-        [temRBict addEntriesFromDictionary:mergeDict];
-    }
-    return temRBict;
 }
 -(void)constructionURLRequest:(NSMutableURLRequest *)urlRequest ByRequestTask:(__kindof RBNetworkRequest  *)request{
     NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].defaultHeaders;
     [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [urlRequest setValue:obj forHTTPHeaderField:key];
     }];
-    [request.requestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+    [request.headers enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [urlRequest setValue:obj forHTTPHeaderField:key];
     }];
 }
@@ -207,7 +212,7 @@
     if (progressBlock) {
         [request setValue:progressBlock forKey:@"_progressBlock"];
     }
-    switch (request.requestType) {
+    switch (request.type) {
         case RBRequestDownload:
             [self _startDownloadTask:request];
             break;
@@ -248,7 +253,6 @@
     }
 }
 
-
 - (void)_sendQueueRequest:(RBQueueRequest *)queueRequest withRequest:(RBNetworkRequest *)request {
     __weak __typeof(self)weakSelf = self;
     request.finishBlock = ^(id _Nullable responseObject, NSError * _Nullable error){
@@ -263,10 +267,10 @@
 
 -(void)_startDefaultTask:(RBNetworkRequest *)requestTask{
     [self _requestSerializerByRequest:requestTask];
-    NSString*urlStr = [self urlStringByRequest:requestTask];
+    [self urlStringByRequest:requestTask];
     NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
     NSError *serializationError = nil;
-    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:urlStr parameters:paramsDict error:&serializationError];
+    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:requestTask.url parameters:paramsDict error:&serializationError];
     if (serializationError) {
             if (requestTask.failureBlock) {
                 requestTask.failureBlock(serializationError);
@@ -378,10 +382,10 @@
 
 - (void)_startUploadTask:(RBNetworkRequest *)uploadTask{
       [self _requestSerializerByRequest:uploadTask];
-       NSString*urlStr = [self urlStringByRequest:uploadTask];
+      [self urlStringByRequest:uploadTask];
        NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
       __block NSError *serializationError = nil;
-      NSMutableURLRequest *request = [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:urlStr parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+      NSMutableURLRequest *request = [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.url parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
        [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
            if (obj.fileData) {
                if (obj.fileName && obj.mimeType) {
@@ -410,7 +414,7 @@
         }
           return ;
        }
-        request.timeoutInterval = uploadTask.requestTimeout;
+        request.timeoutInterval = uploadTask.timeout;
         __block  NSURLSessionUploadTask *uploadDataTask = nil;
           uploadDataTask = [self.sessionManager uploadTaskWithStreamedRequest:request  progress:^(NSProgress *progress){
                 if (uploadTask.progressBlock) {
@@ -444,16 +448,16 @@
 
 #pragma mark download
 -(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
-    NSString*downloadURL = [self urlStringByRequest:downloadRequest];
-    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadURL]];
-    if (downloadRequest.requestHeaders.count > 0) {
-        [downloadRequest.requestHeaders enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
+    [self urlStringByRequest:downloadRequest];
+    NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadRequest.url]];
+    if (downloadRequest.headers.count > 0) {
+        [downloadRequest.headers enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
             //if (![urlRequest valueForHTTPHeaderField:field]) {
             [urlRequest setValue:value forHTTPHeaderField:field];
             //}
         }];
     }
-    urlRequest.timeoutInterval = downloadRequest.requestTimeout;
+    urlRequest.timeoutInterval = downloadRequest.timeout;
     
     NSURL *downloadFileSavePath;
     BOOL isDirectory;

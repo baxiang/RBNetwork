@@ -30,16 +30,17 @@
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];
         _maxConcurrentOperationCount = RB_MAX_HTTP_CONNECTION;
 #ifdef DEBUG
-        _enableDebug = YES;
+        self.enableDebug = YES;
 #else
-       _enableDebug = NO;
+       self.enableDebug = NO;
 #endif
         
     }
     return self;
 }
 -(void)setEnableDebug:(BOOL)enableDebug{
-    if (_enableDebug) {
+    _enableDebug = enableDebug;
+    if (enableDebug) {
         [[RBNetworkLogger sharedLogger] startLogging];
     }else{
         [[RBNetworkLogger sharedLogger] stopLogging];

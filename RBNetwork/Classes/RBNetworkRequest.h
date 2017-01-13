@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  是否使用RBNetworkConfig 中defaultParams 默认是YES
  */
-@property (nonatomic, assign, readonly) BOOL addDefaultParams;
+@property (nonatomic, assign, readonly) BOOL addDefaultParameters;
 /**
   Request 序列化类型
  */

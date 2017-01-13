@@ -93,7 +93,7 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
 /**
  *  默认的请求参数
  */
-@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>* defaultParams;
+@property (nonatomic, copy,nullable) NSDictionary<NSString *,NSString *>* defaultParameters;
 
 /**
   默认的请求方法
