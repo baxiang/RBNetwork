@@ -7,72 +7,137 @@
 //
 
 #import "RBNetworkLogger.h"
+#import "AFURLSessionManager.h"
+#import <objc/runtime.h>
 
-@implementation RBNetworkLogger
-
-+ (void)logDebugRequestInfoWithURL:(NSString *)url
-                        methodName:(NSString *)methodName
-                            params:(NSDictionary *)params
-                reachabilityStatus:(NSInteger)reachabilityStatus{
-#ifdef DEBUG
-    NSMutableString *logString = [NSMutableString stringWithString:@"\n\n**********************************************************************************\n*                                    Request                                     *\n**********************************************************************************\n\n"];
-    [logString appendFormat:@"URL:\t\t\t\t\t%@\n",url];
-    [logString appendFormat:@"MethodName:\t%@\n",methodName];
-    [logString appendFormat:@"Param:\t\t\t\t%@\n",params.count ? params : @""];
-    NSString *netReachability = nil;
-    switch (reachabilityStatus) {
-        case 2:
-            netReachability = @"WIFI";
-            break;
-        case 1:
-            netReachability = @"2G/3G/4G";
-            break;
-        default:
-            netReachability = @"无网络";
-            break;
+static NSURLRequest * AFNetworkRequestFromNotification(NSNotification *notification) {
+    NSURLRequest *request = nil;
+    if ([[notification object] respondsToSelector:@selector(originalRequest)]) {
+        request = [[notification object] originalRequest];
+    } else if ([[notification object] respondsToSelector:@selector(request)]) {
+        request = [[notification object] request];
     }
-    [logString appendFormat:@"Net:\t\t\t\t\t%@",netReachability];
-    [logString appendFormat:@"\n\n**********************************************************************************\n*                                  Request End                                   *\n**********************************************************************************\n\n\n\n"];
-    NSLog(@"%@", logString);
-#endif
+    return request;
 }
 
-+ (void)logDebugResponseInfoWithSessionDataTask:(NSURLSessionTask *)sessionDataTask
-                                 responseObject:(id)response
-                                          error:(NSError *)error {
-#ifdef DEBUG
-    NSMutableString *logString = [NSMutableString stringWithString:@"\n\n==================================================================================\n=                                  Net Response                                  =\n==================================================================================\n\n"];
-    BOOL shouldLogError = error ? YES : NO;
-    if ([sessionDataTask.response isKindOfClass:[NSHTTPURLResponse class]]) {
-        [logString appendFormat:@"Status:\t\t\t\t\t%ld\n", (long)[(NSHTTPURLResponse *)sessionDataTask.response statusCode]];
+static NSError * AFNetworkErrorFromNotification(NSNotification *notification) {
+    NSError *error = nil;
+    if ([[notification object] isKindOfClass:[NSURLSessionTask class]]) {
+        error = [(NSURLSessionTask *)[notification object] error];
+        if (!error) {
+            error = notification.userInfo[AFNetworkingTaskDidCompleteErrorKey];
+        }
     }
-    if (shouldLogError) {
-        [logString appendFormat:@"Error Domain:\t\t\t\t\t\t\t%@\n", error.domain];
-        [logString appendFormat:@"Error Domain Code:\t\t\t\t\t\t%ld\n", (long)error.code];
-        [logString appendFormat:@"Error Localized Description:\t\t\t%@\n", error.localizedDescription];
-        [logString appendFormat:@"Error Localized Failure Reason:\t\t\t%@\n", error.localizedFailureReason];
-        [logString appendFormat:@"Error Localized Recovery Suggestion:\t%@\n\n", error.localizedRecoverySuggestion];
-    }
-    [logString appendFormat:@"Response:\t\t\t\t%@\n\n", response];
     
-    
-    [logString appendString:@"\n----------------------------  Related Request Content  ---------------------------\n"];
-    [logString appendFormat:@"\nHTTP URL:\t\t\t%@", sessionDataTask.currentRequest.URL];
-    [logString appendFormat:@"\n\nHTTP Header:\n\t%@", sessionDataTask.currentRequest.allHTTPHeaderFields];
-    if (sessionDataTask.currentRequest.HTTPBody) {
-        [logString appendFormat:@"\n\nHTTP Body:\n\t%@", [[NSString alloc] initWithData:sessionDataTask.currentRequest.HTTPBody encoding:NSUTF8StringEncoding]];
-    }
-    [logString appendFormat:@"\n\n==================================================================================\n=                               Net Response End                                 =\n==================================================================================\n\n\n\n"];
-    NSLog(@"%@", logString);
-#endif
-}
-+ (void)logCacheInfoWithResponseData:(id)responseData {
-#ifdef DEBUG
-    NSMutableString *logString = [NSMutableString stringWithString:@"\n\n==================================================================================\n=                                Cached Response                                 =\n==================================================================================\n\n"];
-    [logString appendFormat:@"Response:\n\t%@\n\n", responseData];
-    [logString appendFormat:@"\n\n==================================================================================\n=                              Cached Response End                               =\n==================================================================================\n\n\n\n"];
-    NSLog(@"%@", logString);
-#endif
+    return error;
 }
 
+@implementation RBNetworkLogger{
+    bool _debugModel;
+}
+
++ (instancetype)sharedLogger {
+    static RBNetworkLogger *_sharedLogger = nil;
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _sharedLogger = [[self alloc] init];
+    });
+    
+    return _sharedLogger;
+}
+
+- (id)init {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    return self;
+}
+
+- (void)dealloc {
+    [self stopLogging];
+}
+
+- (void)startLogging {
+    [self stopLogging];
+    _debugModel = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidStart:) name:AFNetworkingTaskDidResumeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidFinish:) name:AFNetworkingTaskDidCompleteNotification object:nil];
+}
+
+- (void)stopLogging {
+    _debugModel = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+#pragma mark - NSNotification
+
+static void * AFNetworkRequestStartDate = &AFNetworkRequestStartDate;
+
+- (void)networkRequestDidStart:(NSNotification *)notification {
+    NSURLRequest *request = AFNetworkRequestFromNotification(notification);
+    if (!request) {
+        return;
+    }
+    
+    if (request && self.filterPredicate && [self.filterPredicate evaluateWithObject:request]) {
+        return;
+    }
+    
+    objc_setAssociatedObject(notification.object, AFNetworkRequestStartDate, [NSDate date], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    NSString *body = nil;
+    if ([request HTTPBody]) {
+        body = [[NSString alloc] initWithData:[request HTTPBody] encoding:NSUTF8StringEncoding];
+    }
+    if (_debugModel) {
+        NSLog(@"\n ===================== HTTP Method ===================== \n %@ \n ===================== HTTP URL ===================== \n '%@': \n ===================== HTTP HeaderFields ===================== \n %@ \n ===================== HTTPBody ===================== \n %@ \n ===================== Logger End ===================== \n", [request HTTPMethod], [[request URL] absoluteString], [request allHTTPHeaderFields], body);
+    }
+
+}
+
+- (void)networkRequestDidFinish:(NSNotification *)notification {
+    NSURLRequest *request = AFNetworkRequestFromNotification(notification);
+    NSURLResponse *response = [notification.object response];
+    NSError *error = AFNetworkErrorFromNotification(notification);
+    
+    if (!request && !response) {
+        return;
+    }
+    
+    if (request && self.filterPredicate && [self.filterPredicate evaluateWithObject:request]) {
+        return;
+    }
+    
+    NSUInteger responseStatusCode = 0;
+    NSDictionary *responseHeaderFields = nil;
+    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+        responseStatusCode = (NSUInteger)[(NSHTTPURLResponse *)response statusCode];
+        responseHeaderFields = [(NSHTTPURLResponse *)response allHeaderFields];
+    }
+    
+    id responseObject = notification.userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey];
+    if (responseObject) {
+        if ([responseObject isKindOfClass:[NSDictionary class]]) {
+            responseObject = [[NSDictionary alloc] initWithDictionary:responseObject];
+        }
+        else if ([responseObject isKindOfClass:[NSData class]]) {
+            NSStringEncoding stringEncoding = NSUTF8StringEncoding;
+            responseObject = [[NSString alloc] initWithData:responseObject encoding:stringEncoding];
+        }
+    }
+    
+    NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:objc_getAssociatedObject(notification.object, AFNetworkRequestStartDate)];
+    if (_debugModel) {
+        if (error) {
+            
+            NSLog(@"[Error] %@ '%@' (%ld) [%.04f s]: %@", [request HTTPMethod], [[response URL] absoluteString], (long)responseStatusCode, elapsedTime, error);
+            
+        }else{
+             NSLog(@"%ld '%@' [%.04f s]: %@ %@", (long)responseStatusCode, [[response URL] absoluteString], elapsedTime, responseHeaderFields, responseObject);
+        }
+    }
+}
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "RBNetworkConfig.h"
+#import "RBNetworkLogger.h"
 #define  PDNetworkDownloadName @"PDNetworkDownloadName"
 @implementation RBNetworkConfig
 + (RBNetworkConfig *)defaultConfig {
@@ -28,11 +29,22 @@
         _defaultTimeoutInterval = RB_REQUEST_TIMEOUT;
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];
         _maxConcurrentOperationCount = RB_MAX_HTTP_CONNECTION;
+#ifdef DEBUG
         _enableDebug = YES;
+#else
+       _enableDebug = NO;
+#endif
+        
     }
     return self;
 }
-
+-(void)setEnableDebug:(BOOL)enableDebug{
+    if (_enableDebug) {
+        [[RBNetworkLogger sharedLogger] startLogging];
+    }else{
+        [[RBNetworkLogger sharedLogger] stopLogging];
+    }
+}
 -(NSString *)downloadFolderPath{
     if (!_downloadFolderPath) {
         NSString *docmentPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];

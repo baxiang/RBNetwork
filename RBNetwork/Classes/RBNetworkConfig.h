@@ -131,7 +131,7 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
 @property (nonatomic,copy,nullable) NSString *downloadFolderPath;
 
 /**
- *  @brief 是否打开debug日志，默认打开
+ *  @brief 是否打开debug日志，默认在debug模式下是打开 在release模式下关闭
  */
 @property (nonatomic, assign) BOOL enableDebug;
 

@@ -8,15 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RBNetworkLogger : NSObject
 
-+ (void)logDebugRequestInfoWithURL:(NSString *)url
-                        methodName:(NSString *)methodName
-                            params:(NSDictionary *)params reachabilityStatus:(NSInteger)reachabilityStatus;
 
-+ (void)logDebugResponseInfoWithSessionDataTask:(NSURLSessionTask *)sessionDataTask
-                                 responseObject:(id)response
-                                          error:(NSError *)error;
+@interface RBNetworkLogger: NSObject
 
-+ (void)logCacheInfoWithResponseData:(id)responseData;
+@property (nonatomic, strong) NSPredicate *filterPredicate;
+
++ (instancetype)sharedLogger;
+
+
+/**
+ 开始log打印
+ */
+- (void)startLogging;
+
+/**
+ 关闭log打印
+ */
+- (void)stopLogging;
 @end

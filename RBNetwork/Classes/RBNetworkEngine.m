@@ -84,9 +84,8 @@
         _requestRecordDict = [NSMutableDictionary dictionary];
         _sessionManager = [AFHTTPSessionManager manager];
         _sessionManager.operationQueue.maxConcurrentOperationCount = [RBNetworkConfig defaultConfig].maxConcurrentOperationCount;
-        
-        _lock = dispatch_semaphore_create(1);
         _lock = OS_SPINLOCK_INIT;
+        
     }
     return self;
 }
@@ -275,9 +274,7 @@
             return;
         }
     [self constructionURLRequest:request ByRequestTask:requestTask];
-    if ([RBNetworkConfig defaultConfig].enableDebug) {
-        [RBNetworkLogger logDebugRequestInfoWithURL:urlStr  methodName:requestTask.httpMethodString params:paramsDict reachabilityStatus:[[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus]];
-    }
+ 
     __block NSURLSessionDataTask *dataTask = nil;
     __weak __typeof(self)weakSelf = self;
     dataTask = [self.sessionManager dataTaskWithRequest:request
