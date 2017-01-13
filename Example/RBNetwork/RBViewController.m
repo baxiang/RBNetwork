@@ -40,8 +40,10 @@
        cell.textLabel.text = @"POST请求";
     }else if (indexPath.row ==2){
         cell.textLabel.text = @"upload请求";
-    }else if (indexPath.row ==2){
+    }else if (indexPath.row ==3){
         cell.textLabel.text = @"队列请求";
+    }else if (indexPath.row ==4){
+        cell.textLabel.text = @"下载请求";
     }
     return cell;
 }
@@ -53,6 +55,8 @@
         [self postWeiboTimeLine];
     }if (indexPath.row == 2) {
         [self uploadWeiboPhoto];
+    }else if (indexPath.row ==4){
+        [self downloadVideo];
     }
 }
 -(void)fetchPublicTimeline{
@@ -107,6 +111,35 @@
 //   } onFailure:^(NSArray<id> *errors) {
 //       
 //   }];
+}
+
+-(NSString*)fetchVideoFolderPath{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *document = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *folder = [document stringByAppendingPathComponent:@"PDFamilyVideo"];
+    if (![fileManager fileExistsAtPath:folder]) {
+        BOOL blCreateFolder= [fileManager createDirectoryAtPath:folder withIntermediateDirectories:NO attributes:nil error:NULL];
+        if (blCreateFolder) {
+            NSLog(@" folder success");
+        }else {
+            NSLog(@" folder fial");
+        }
+    }else {
+        NSLog(@"沙盒文件已经存在");
+    }
+    return folder;
+}
+
+-(void)downloadVideo{
+    [RBNetworkEngine sendRequest:^(RBNetworkRequest * _Nullable request) {
+        request.type = RBRequestDownload;
+        request.url = @"http://media.roo.bo/voices/moment/1011000000200B87/2016-12-22/20161222_feb7883c4a9a0df157154ae89efd50e8.mp4";
+        request.downloadSavePath =  [[self fetchVideoFolderPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",request.url]];
+    } onSuccess:^(id  _Nullable responseObject) {
+        NSLog(@"%@",responseObject);
+    } onFailure:^(NSError * _Nullable error) {
+        NSLog(@"%@",error);
+    }];
 }
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if (alertView.cancelButtonIndex!= buttonIndex) {

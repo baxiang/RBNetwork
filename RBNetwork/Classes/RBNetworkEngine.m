@@ -477,8 +477,8 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     } else {
         downloadFileSavePath = [NSURL fileURLWithPath:downloadRequest.downloadSavePath isDirectory:NO];
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadFileSavePath]) {
-        [[NSFileManager defaultManager] removeItemAtPath:downloadFileSavePath error:nil];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadFileSavePath.path]) {
+        [[NSFileManager defaultManager] removeItemAtPath:downloadFileSavePath.path error:nil];
     }
     BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath].path];
     NSData *data = [NSData dataWithContentsOfURL:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath]];
@@ -501,7 +501,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     }
     if (!resumeSucceeded) {
         downloadTask = [self.sessionManager downloadTaskWithRequest:urlRequest progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-            return [NSURL fileURLWithPath:downloadFileSavePath isDirectory:NO];
+            return [NSURL fileURLWithPath:downloadFileSavePath.path isDirectory:NO];
         } completionHandler:
                         ^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
                             [self handleResponseResult:downloadTask responseObject:filePath error:error];
