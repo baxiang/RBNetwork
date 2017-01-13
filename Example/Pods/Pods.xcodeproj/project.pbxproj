@@ -11,7 +11,6 @@
 		0B13C0675BBE26E0555F738DD9A6EAB9 /* RBQueueRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 36145AB676E3A5CB1CAD401B4A8881C8 /* RBQueueRequest.m */; };
 		0D1FFD30267C0776FD3E88EFF51E312F /* UIImageView+AFNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 88E09DEF94D526225C810F23CC92A0EC /* UIImageView+AFNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		130B2B0C6EF10D9C02AFC565A65D0FC0 /* RBNetworkEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DE52BC5610B96EE36E72DFD3475BBCA /* RBNetworkEngine.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		13312C1959E13FFB269C8D8DE396F1E2 /* NSError+RBNetwork.m in Sources */ = {isa = PBXBuildFile; fileRef = 2210925245016B70CB54080B2D908865 /* NSError+RBNetwork.m */; };
 		140F458AB7312414FC423FEED70A3733 /* UIActivityIndicatorView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DBF9A65D74C411609C6BCE47ACB2BB3 /* UIActivityIndicatorView+AFNetworking.m */; };
 		1B172D75A6F4B5376B25754CE0668536 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 159245C1D8294EF16CB016833D763E42 /* Foundation.framework */; };
 		1E2A6D057E20BE8F5ED3E594F7B8C286 /* AFNetworking-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = A9D801CA2270411D9F47B00CCBDC2E35 /* AFNetworking-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -69,7 +68,6 @@
 		F2D899C7AA0D7FC20160091BB9D31CF3 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = E5776C85BF17C8E46DE316E90EBEA7C6 /* UIImageView+AFNetworking.m */; };
 		F84DD74BB7F612DE372F8C051420DF72 /* UIProgressView+AFNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = B2443AB558BFB7352C6402B864D3E17F /* UIProgressView+AFNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F92D1DA3EE6214487F461E4A7D4CE133 /* RBNetworkLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A448AEA24EBC465C768E0747BF59AA /* RBNetworkLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		FEF4452002DD30DC049BAEA2A7119A9F /* NSError+RBNetwork.h in Headers */ = {isa = PBXBuildFile; fileRef = 3151175A8F05049B6E3B5D51D2507C99 /* NSError+RBNetwork.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FEF6EACE962EAE70E2EAC5F3C83EF7C8 /* AFImageDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 75F63933334E2DC4EB4824623FEA70C9 /* AFImageDownloader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FF205BF61371F4B2783515E43E460578 /* RBNetworkLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = F707FBC8B2B01BA5C2F850D0B176D80E /* RBNetworkLogger.m */; };
 /* End PBXBuildFile section */
@@ -111,11 +109,9 @@
 		17DA4105C50CD83DA93D34E7FA8A0D1A /* WeiboSDK.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = WeiboSDK.h; path = libWeiboSDK/WeiboSDK.h; sourceTree = "<group>"; };
 		18DF5F4510DE1DEF51FA456DCC8413A2 /* RBNetwork-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RBNetwork-umbrella.h"; sourceTree = "<group>"; };
 		1F7FECDC3E4E4F279AF219A7A1F41DD8 /* Pods-RBNetwork_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-RBNetwork_Example-umbrella.h"; sourceTree = "<group>"; };
-		2210925245016B70CB54080B2D908865 /* NSError+RBNetwork.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "NSError+RBNetwork.m"; sourceTree = "<group>"; };
 		25973991427311E526F4755347C2BE1F /* RBNetworkUtilities.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBNetworkUtilities.h; sourceTree = "<group>"; };
 		27A448AEA24EBC465C768E0747BF59AA /* RBNetworkLogger.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBNetworkLogger.h; sourceTree = "<group>"; };
 		2F3716A59D28485AEF69DF83366B9209 /* AFURLSessionManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFURLSessionManager.h; path = AFNetworking/AFURLSessionManager.h; sourceTree = "<group>"; };
-		3151175A8F05049B6E3B5D51D2507C99 /* NSError+RBNetwork.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "NSError+RBNetwork.h"; sourceTree = "<group>"; };
 		328EDD52016299C96E0C9509FD4960FE /* AFURLRequestSerialization.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFURLRequestSerialization.m; path = AFNetworking/AFURLRequestSerialization.m; sourceTree = "<group>"; };
 		34E6FC6810D119C64AB736AAC164C846 /* AFNetworkActivityIndicatorManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFNetworkActivityIndicatorManager.m; path = "UIKit+AFNetworking/AFNetworkActivityIndicatorManager.m"; sourceTree = "<group>"; };
 		36145AB676E3A5CB1CAD401B4A8881C8 /* RBQueueRequest.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RBQueueRequest.m; sourceTree = "<group>"; };
@@ -132,19 +128,19 @@
 		56EEBB2AFF0528D185AF7AB240092FFC /* Pods-RBNetwork_Tests-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-RBNetwork_Tests-umbrella.h"; sourceTree = "<group>"; };
 		583B7E164B5B71D7FB6D1E83E1939D90 /* AFURLRequestSerialization.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFURLRequestSerialization.h; path = AFNetworking/AFURLRequestSerialization.h; sourceTree = "<group>"; };
 		5A1672152AE9E531E639D6303B7C5384 /* libWeiboSDK.a */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = archive.ar; name = libWeiboSDK.a; path = libWeiboSDK/libWeiboSDK.a; sourceTree = "<group>"; };
-		5AB803E436D4CFA4A3BCAB556742E0DC /* RBNetwork.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = RBNetwork.modulemap; sourceTree = "<group>"; };
+		5AB803E436D4CFA4A3BCAB556742E0DC /* RBNetwork.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = RBNetwork.modulemap; sourceTree = "<group>"; };
 		5D1D21FB86CC19A4B7C0F2E4281F01D5 /* RBQueueRequest.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBQueueRequest.h; sourceTree = "<group>"; };
 		5DBF9A65D74C411609C6BCE47ACB2BB3 /* UIActivityIndicatorView+AFNetworking.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "UIActivityIndicatorView+AFNetworking.m"; path = "UIKit+AFNetworking/UIActivityIndicatorView+AFNetworking.m"; sourceTree = "<group>"; };
 		605F997E542CF9E3184A40987DE3A005 /* AFHTTPSessionManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFHTTPSessionManager.h; path = AFNetworking/AFHTTPSessionManager.h; sourceTree = "<group>"; };
-		60CF730E35EE9C323C45907CFEDBD9C2 /* Pods_RBNetwork_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_RBNetwork_Example.framework; path = "Pods-RBNetwork_Example.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		60CF730E35EE9C323C45907CFEDBD9C2 /* Pods_RBNetwork_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RBNetwork_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		65A70021CC6BB93F3180DFA142F3A96E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		6791DAD03E0AC2F18A95A052AA96B1F0 /* RBNetworkConfig.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBNetworkConfig.h; sourceTree = "<group>"; };
 		71000CE315A3A6629618EED21548E168 /* AFURLSessionManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFURLSessionManager.m; path = AFNetworking/AFURLSessionManager.m; sourceTree = "<group>"; };
 		717F3DD5F496C840A171FA32FF33F9D0 /* Pods-RBNetwork_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-RBNetwork_Tests-dummy.m"; sourceTree = "<group>"; };
-		72C6F45FF5CF3C57CB694346459D82BA /* AFNetworking.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = AFNetworking.modulemap; sourceTree = "<group>"; };
+		72C6F45FF5CF3C57CB694346459D82BA /* AFNetworking.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = AFNetworking.modulemap; sourceTree = "<group>"; };
 		75A55129219D0005DCBEFDC756D016E3 /* WBHttpRequest.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = WBHttpRequest.h; path = libWeiboSDK/WBHttpRequest.h; sourceTree = "<group>"; };
 		75F63933334E2DC4EB4824623FEA70C9 /* AFImageDownloader.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFImageDownloader.h; path = "UIKit+AFNetworking/AFImageDownloader.h"; sourceTree = "<group>"; };
-		76E51EC70FBB0F623ACE906A2902FA3A /* Pods-RBNetwork_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = "Pods-RBNetwork_Tests.modulemap"; sourceTree = "<group>"; };
+		76E51EC70FBB0F623ACE906A2902FA3A /* Pods-RBNetwork_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-RBNetwork_Tests.modulemap"; sourceTree = "<group>"; };
 		7C6F15B15EDA25B2492D3CE5E454F692 /* AFSecurityPolicy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFSecurityPolicy.m; path = AFNetworking/AFSecurityPolicy.m; sourceTree = "<group>"; };
 		80FAF2CC6C53C7A9E3BC28102A732053 /* AFHTTPSessionManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFHTTPSessionManager.m; path = AFNetworking/AFHTTPSessionManager.m; sourceTree = "<group>"; };
 		8230FAF556FBD9F8ED059AD2903C4CF0 /* UIKit+AFNetworking.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIKit+AFNetworking.h"; path = "UIKit+AFNetworking/UIKit+AFNetworking.h"; sourceTree = "<group>"; };
@@ -153,7 +149,7 @@
 		8C17FC13B636F5F0CC1DC0A598EEFBFC /* UIWebView+AFNetworking.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIWebView+AFNetworking.h"; path = "UIKit+AFNetworking/UIWebView+AFNetworking.h"; sourceTree = "<group>"; };
 		8E295F0EE79BADE34223714D48355AF6 /* AFNetworkActivityIndicatorManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFNetworkActivityIndicatorManager.h; path = "UIKit+AFNetworking/AFNetworkActivityIndicatorManager.h"; sourceTree = "<group>"; };
 		8F216E1104410C23128BCBF943A3DD2F /* AFImageDownloader.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFImageDownloader.m; path = "UIKit+AFNetworking/AFImageDownloader.m"; sourceTree = "<group>"; };
-		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		94E182FD8728ADD16DE75B1F7A9DDF1E /* AFAutoPurgingImageCache.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFAutoPurgingImageCache.m; path = "UIKit+AFNetworking/AFAutoPurgingImageCache.m"; sourceTree = "<group>"; };
 		99C00C99DBBF21B7F1CC88FCFCE093D7 /* AFNetworking.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = AFNetworking.xcconfig; sourceTree = "<group>"; };
 		9ADAF03A765A3FCAC6E0673E44664E07 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/MobileCoreServices.framework; sourceTree = DEVELOPER_DIR; };
@@ -167,7 +163,7 @@
 		AB75950398B9C2DFF85A0F53FE93B98F /* WBHttpRequest+WeiboShare.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "WBHttpRequest+WeiboShare.h"; path = "libWeiboSDK/WBHttpRequest+WeiboShare.h"; sourceTree = "<group>"; };
 		ADD757309A5ED7DD1C8244D254A87285 /* AFURLResponseSerialization.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFURLResponseSerialization.m; path = AFNetworking/AFURLResponseSerialization.m; sourceTree = "<group>"; };
 		AE1A8AACBB11BD1599C6605DC6D36EBD /* AFNetworkReachabilityManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFNetworkReachabilityManager.h; path = AFNetworking/AFNetworkReachabilityManager.h; sourceTree = "<group>"; };
-		AFD9605078132C7E42630D340D4D8F2D /* AFNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AFNetworking.framework; path = AFNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFD9605078132C7E42630D340D4D8F2D /* AFNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AFNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B08F699B6A2C52E2A9EE93013F8CBA7D /* UIButton+AFNetworking.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "UIButton+AFNetworking.m"; path = "UIKit+AFNetworking/UIButton+AFNetworking.m"; sourceTree = "<group>"; };
 		B1B11615CB3C857010C507A9F72117E8 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B2443AB558BFB7352C6402B864D3E17F /* UIProgressView+AFNetworking.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIProgressView+AFNetworking.h"; path = "UIKit+AFNetworking/UIProgressView+AFNetworking.h"; sourceTree = "<group>"; };
@@ -189,17 +185,17 @@
 		E4008765C9BC3DEE22E833C32744112E /* Pods-RBNetwork_Tests-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-RBNetwork_Tests-frameworks.sh"; sourceTree = "<group>"; };
 		E4B38D7D12E472ADE3A81859670DB582 /* RBNetworkConfig.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RBNetworkConfig.m; sourceTree = "<group>"; };
 		E5776C85BF17C8E46DE316E90EBEA7C6 /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "UIImageView+AFNetworking.m"; path = "UIKit+AFNetworking/UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
-		E938F27F0082115264CBC0B5DC92ED76 /* RBNetwork.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = RBNetwork.framework; path = RBNetwork.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E938F27F0082115264CBC0B5DC92ED76 /* RBNetwork.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RBNetwork.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EACFBA88A948B1EF6BFCF0A626F54EF1 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		EB68FBA1617F5FE3144D65D65B300CDC /* Pods-RBNetwork_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-RBNetwork_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		ED8298915E352BD5A6AA6682CB1D707A /* Pods-RBNetwork_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = "Pods-RBNetwork_Example.modulemap"; sourceTree = "<group>"; };
+		ED8298915E352BD5A6AA6682CB1D707A /* Pods-RBNetwork_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-RBNetwork_Example.modulemap"; sourceTree = "<group>"; };
 		EF3CEFE34CAF9B0F931C4FA550551BED /* RBNetworkUtilities.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RBNetworkUtilities.m; sourceTree = "<group>"; };
 		EF84B834FED2FB3615268F782B95EBAB /* WBHttpRequest+WeiboUser.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "WBHttpRequest+WeiboUser.h"; path = "libWeiboSDK/WBHttpRequest+WeiboUser.h"; sourceTree = "<group>"; };
 		F31E14D9BCE4EB50AE59B17D3C69E3FC /* WeiboUser.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = WeiboUser.h; path = libWeiboSDK/WeiboUser.h; sourceTree = "<group>"; };
 		F3F45449554ABE241CE314B04B0E505D /* WBHttpRequest+WeiboToken.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "WBHttpRequest+WeiboToken.h"; path = "libWeiboSDK/WBHttpRequest+WeiboToken.h"; sourceTree = "<group>"; };
 		F707FBC8B2B01BA5C2F850D0B176D80E /* RBNetworkLogger.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RBNetworkLogger.m; sourceTree = "<group>"; };
 		F800C46F6993E3EA7D5C2DAF2C1126AE /* AFAutoPurgingImageCache.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFAutoPurgingImageCache.h; path = "UIKit+AFNetworking/AFAutoPurgingImageCache.h"; sourceTree = "<group>"; };
-		F804E5CD7429D14B686C108A2227C139 /* Pods_RBNetwork_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_RBNetwork_Tests.framework; path = "Pods-RBNetwork_Tests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F804E5CD7429D14B686C108A2227C139 /* Pods_RBNetwork_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RBNetwork_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD78F53FA85AB4B63BDF8C5845FA5EE0 /* AFNetworking-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "AFNetworking-dummy.m"; sourceTree = "<group>"; };
 		FD94AE85EF1B1A8D2EB8ED422F17A921 /* UIImage+AFNetworking.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIImage+AFNetworking.h"; path = "UIKit+AFNetworking/UIImage+AFNetworking.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -259,8 +255,6 @@
 		0BFE58FC4FAA5AA4B31B4FE3779F929C /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				3151175A8F05049B6E3B5D51D2507C99 /* NSError+RBNetwork.h */,
-				2210925245016B70CB54080B2D908865 /* NSError+RBNetwork.m */,
 				A568CF26C0F594410CFFDE0AE0AA43FF /* RBNetwork.h */,
 				6791DAD03E0AC2F18A95A052AA96B1F0 /* RBNetworkConfig.h */,
 				E4B38D7D12E472ADE3A81859670DB582 /* RBNetworkConfig.m */,
@@ -275,7 +269,6 @@
 				5D1D21FB86CC19A4B7C0F2E4281F01D5 /* RBQueueRequest.h */,
 				36145AB676E3A5CB1CAD401B4A8881C8 /* RBQueueRequest.m */,
 			);
-			name = Classes;
 			path = Classes;
 			sourceTree = "<group>";
 		};
@@ -338,7 +331,6 @@
 				7C8CC1B82E176ABE9B52B76CAE076F12 /* Support Files */,
 				6B17217A77921066C72F376593D8E1CC /* UIKit */,
 			);
-			name = AFNetworking;
 			path = AFNetworking;
 			sourceTree = "<group>";
 		};
@@ -425,7 +417,6 @@
 			children = (
 				0BFE58FC4FAA5AA4B31B4FE3779F929C /* Classes */,
 			);
-			name = RBNetwork;
 			path = RBNetwork;
 			sourceTree = "<group>";
 		};
@@ -445,7 +436,6 @@
 				C4630A1EF872C04AA0F9C49F22B2D388 /* Frameworks */,
 				0FE5C441738AEF4F4B35B4761EF503D8 /* Resources */,
 			);
-			name = WeiboSDK;
 			path = WeiboSDK;
 			sourceTree = "<group>";
 		};
@@ -562,7 +552,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEF4452002DD30DC049BAEA2A7119A9F /* NSError+RBNetwork.h in Headers */,
 				C5F28A5D7260DB0F4EE7B2B518B70518 /* RBNetwork-umbrella.h in Headers */,
 				8B80BDA888EFEBF7A454236AB9F5A2E0 /* RBNetwork.h in Headers */,
 				1EAEBDF4E7871C48CF88E9113E8A48F7 /* RBNetworkConfig.h in Headers */,
@@ -747,7 +736,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				13312C1959E13FFB269C8D8DE396F1E2 /* NSError+RBNetwork.m in Sources */,
 				C7F632EB349D136323FF620124F48BAF /* RBNetwork-dummy.m in Sources */,
 				DE33015E0AC0511CB20F15CB59FE5058 /* RBNetworkConfig.m in Sources */,
 				37A2F20E7292C717B7B140C86677DEEF /* RBNetworkEngine.m in Sources */,

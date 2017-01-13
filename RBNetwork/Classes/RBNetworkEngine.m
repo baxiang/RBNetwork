@@ -8,11 +8,9 @@
 
 #import "RBNetworkEngine.h"
 #import "AFNetworking.h"
-#import "NSError+RBNetwork.h"
 #import "RBNetworkLogger.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <libkern/OSAtomic.h>
-//#import  <objc/runtime.h>
 #import "RBNetworkUtilities.h"
 #import <pthread/pthread.h>
 #import "AFNetworkActivityIndicatorManager.h"
@@ -415,7 +413,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     BOOL result = [request statusCodeValidator];
     if (!result) {
         if (error) {
-            *error = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestParseFailure userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
+            //*error = [NSError errorWithDomain:RBNetworkRequestErrorDomain code:RBErrorCodeRequestParseFailure userInfo:@{NSLocalizedDescriptionKey:@"Invalid status code"}];
         }
         return result;
     }

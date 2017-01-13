@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 #import "RBNetworkRequest.h"
 #import "RBQueueRequest.h"
-
+NS_ASSUME_NONNULL_BEGIN
 @interface RBNetworkEngine : NSObject
 + (nullable RBNetworkEngine *)defaultEngine;
 
@@ -25,4 +25,5 @@
 
 
 
+NS_ASSUME_NONNULL_END
 @end
