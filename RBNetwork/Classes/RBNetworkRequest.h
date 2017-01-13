@@ -10,6 +10,7 @@
 #import "RBNetworkConfig.h"
 @class RBUploadFormData;
 
+NS_ASSUME_NONNULL_BEGIN
 
 @interface RBNetworkRequest : NSObject
 /**
@@ -18,48 +19,52 @@
 @property (nonatomic, strong,nullable) NSURLSessionTask *requestTask;
 
 /**
- 请求的类型
+ 请求的类型 默认 HTTP request type, such as GET, POST
  */
-@property (nonatomic, assign) RBRequestType requestType;
+@property (nonatomic, assign) RBRequestType type;
 /**
- *  BaseURL
+ *  服务器地址 eg htttps://www.foo.com
  */
-@property (nonatomic, copy,nullable) NSString *requestBaseURL;
+@property (nonatomic, copy,nullable) NSString *server;
 
 /**
- *  requestURL
+ *  服务器的接口 eg /foo/bar/
  */
-@property (nonatomic, strong,nullable) NSString *requestURL;
+@property (nonatomic, strong,nullable) NSString *api;
 
+/**
+  请求的完整地址 eg htttps://www.foo.com/foo/bar/
+ */
+@property (nonatomic, strong,nullable) NSString *url;
 /**
  *  request Method
  */
-@property (nonatomic, assign) RBRequestMethod requestMethod;
+@property (nonatomic, assign) RBRequestMethod method;
 
 /**
  *  Timeout 超时时间
  */
-@property (nonatomic, assign) NSTimeInterval requestTimeout;
+@property (nonatomic, assign) NSTimeInterval timeout;
 
 /**
  请求header
  */
-@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*requestHeaders;
+@property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*headers;
 
 /**
  是否使用RBNetworkConfig 中defaultHeaders  默认是YES
  */
-@property (nonatomic, assign, readonly) BOOL useDefaultHeaders;
+@property (nonatomic, assign, readonly) BOOL addDefaultHeaders;
 
 /**
    请求参数
  */
-@property (nonatomic,strong,nullable)  NSDictionary *requestParameters;
+@property (nonatomic,strong,nullable)  NSDictionary *parameters;
 
 /**
  是否使用RBNetworkConfig 中defaultParams 默认是YES
  */
-@property (nonatomic, assign, readonly) BOOL useDefaultParams;
+@property (nonatomic, assign, readonly) BOOL addDefaultParams;
 /**
   Request 序列化类型
  */
@@ -161,3 +166,4 @@
 + (nonnull instancetype)formDataWithName:(nonnull NSString *)name fileName:(nullable NSString *)fileName mimeType:(nullable NSString *)mimeType fileURL:(nonnull NSURL *)fileURL;
 
 @end
+NS_ASSUME_NONNULL_END
