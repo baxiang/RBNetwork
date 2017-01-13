@@ -12,18 +12,12 @@
 
 @interface RBNetworkLogger: NSObject
 
-@property (nonatomic, strong) NSPredicate *filterPredicate;
-
 + (instancetype)sharedLogger;
-
 
 /**
  开始log打印
  */
-- (void)startLogging;
+- (void)startLogging:(BOOL)enableDebug;
 
-/**
- 关闭log打印
- */
-- (void)stopLogging;
+
 @end

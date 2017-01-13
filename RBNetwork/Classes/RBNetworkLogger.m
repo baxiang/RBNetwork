@@ -33,7 +33,7 @@ static NSError * AFNetworkErrorFromNotification(NSNotification *notification) {
 }
 
 @implementation RBNetworkLogger{
-    bool _debugModel;
+    BOOL _debugModel;
 }
 
 + (instancetype)sharedLogger {
@@ -48,41 +48,34 @@ static NSError * AFNetworkErrorFromNotification(NSNotification *notification) {
 }
 
 - (id)init {
-    self = [super init];
-    if (!self) {
-        return nil;
+    if (self = [super init]) {
+        _debugModel = NO;
     }
     
     return self;
 }
 
 - (void)dealloc {
-    [self stopLogging];
+    [self startLogging:NO];
 }
-
-- (void)startLogging {
-    [self stopLogging];
-    _debugModel = YES;
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidStart:) name:AFNetworkingTaskDidResumeNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidFinish:) name:AFNetworkingTaskDidCompleteNotification object:nil];
-}
-
-- (void)stopLogging {
-    _debugModel = NO;
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+-(void)startLogging:(BOOL)enableDebug{
+    if (_debugModel!= enableDebug) {
+        if (enableDebug) {
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidStart:) name:AFNetworkingTaskDidResumeNotification object:nil];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(networkRequestDidFinish:) name:AFNetworkingTaskDidCompleteNotification object:nil];
+        }else{
+            [[NSNotificationCenter defaultCenter] removeObserver:self];
+        }
+        _debugModel = enableDebug;
+    }
 }
 
 #pragma mark - NSNotification
-
 static void * AFNetworkRequestStartDate = &AFNetworkRequestStartDate;
 
 - (void)networkRequestDidStart:(NSNotification *)notification {
     NSURLRequest *request = AFNetworkRequestFromNotification(notification);
     if (!request) {
-        return;
-    }
-    
-    if (request && self.filterPredicate && [self.filterPredicate evaluateWithObject:request]) {
         return;
     }
     
@@ -104,10 +97,6 @@ static void * AFNetworkRequestStartDate = &AFNetworkRequestStartDate;
     NSError *error = AFNetworkErrorFromNotification(notification);
     
     if (!request && !response) {
-        return;
-    }
-    
-    if (request && self.filterPredicate && [self.filterPredicate evaluateWithObject:request]) {
         return;
     }
     
