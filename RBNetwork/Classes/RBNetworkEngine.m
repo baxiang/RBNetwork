@@ -95,7 +95,49 @@
 }
 
 #pragma mark network config 请求配置
-- (void)_requestSerializerByRequest:(__kindof RBNetworkRequest *)request {
+
+-(void)_constructRequestConfigByRequest:(__kindof RBNetworkRequest  *)request{
+    if (request.url.length == 0) {
+        if (request.server.length == 0) {
+            request.server =  [RBNetworkConfig defaultConfig].defaultURL;
+        }
+        if (request.api.length > 0) {
+            NSURL *baseURL = [NSURL URLWithString:request.server];
+            // ensure terminal slash for baseURL path, so that NSURL +URLWithString:relativeToURL: works as expected.
+            if ([[baseURL path] length] > 0 && ![[baseURL absoluteString] hasSuffix:@"/"]) {
+                baseURL = [baseURL URLByAppendingPathComponent:@""];
+            }
+            request.url = [[NSURL URLWithString:request.api relativeToURL:baseURL] absoluteString];
+        } else {
+            request.url = request.server;
+        }
+    }
+    NSAssert(request.url.length > 0, @"The request url can't be null.");
+    
+    if (request.addDefaultParameters) {
+        NSDictionary *defaultParameter  = [RBNetworkConfig defaultConfig].defaultParameters;
+        if (defaultParameter.count>0) {
+            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+            [parameters addEntriesFromDictionary:defaultParameter];
+            if (request.parameters.count) {
+                [parameters addEntriesFromDictionary:request.parameters];
+            }
+            request.parameters = parameters;
+        }
+    }
+    
+    if (request.addDefaultHeaders) {
+        NSDictionary *defaultHeaders  = [RBNetworkConfig defaultConfig].defaultHeaders;
+        if (defaultHeaders.count>0) {
+            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+            [parameters addEntriesFromDictionary:defaultHeaders];
+            if (request.headers.count) {
+                [parameters addEntriesFromDictionary:request.headers];
+            }
+            request.headers = parameters;
+        }
+    }
+    
     switch (request.requestSerializerType) {
         case RBRequestSerializerTypeHTTP:
             self.sessionManager.requestSerializer = [AFHTTPRequestSerializer serializer];
@@ -113,47 +155,7 @@
         default:
             break;
     }
-}
 
-- (void)urlStringByRequest:(__kindof RBNetworkRequest *)request {
-    if (request.url.length == 0) {
-        if (request.server.length == 0) {
-            request.server =  [RBNetworkConfig defaultConfig].defaultURL;
-        }
-        if (request.api.length > 0) {
-            NSURL *baseURL = [NSURL URLWithString:request.server];
-            // ensure terminal slash for baseURL path, so that NSURL +URLWithString:relativeToURL: works as expected.
-            if ([[baseURL path] length] > 0 && ![[baseURL absoluteString] hasSuffix:@"/"]) {
-                baseURL = [baseURL URLByAppendingPathComponent:@""];
-            }
-            request.url = [[NSURL URLWithString:request.api relativeToURL:baseURL] absoluteString];
-        } else {
-            request.url = request.server;
-        }
-    }
-    NSAssert(request.url.length > 0, @"The request url can't be null.");
-}
-- (NSDictionary *)requestParamByRequest:(__kindof RBNetworkRequest  *)request {
-    if (request.addDefaultParameters) {
-        NSDictionary *defaultParameter  = [RBNetworkConfig defaultConfig].defaultParameters;
-        if (defaultParameter.count>0) {
-            NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-            [parameters addEntriesFromDictionary:defaultParameter];
-            if (request.parameters.count > 0) {
-                [parameters addEntriesFromDictionary:request.parameters];
-            }
-            request.parameters = parameters;
-        }
-    }
-}
--(void)constructionURLRequest:(NSMutableURLRequest *)urlRequest ByRequestTask:(__kindof RBNetworkRequest  *)request{
-    NSDictionary *baseRequestHeaders = [RBNetworkConfig defaultConfig].defaultHeaders;
-    [baseRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        [urlRequest setValue:obj forHTTPHeaderField:key];
-    }];
-    [request.headers enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        [urlRequest setValue:obj forHTTPHeaderField:key];
-    }];
 }
 
 - (void)_responseSerializerByRequest:(__kindof RBNetworkRequest *)request {
@@ -266,19 +268,15 @@
 }
 
 -(void)_startDefaultTask:(RBNetworkRequest *)requestTask{
-    [self _requestSerializerByRequest:requestTask];
-    [self urlStringByRequest:requestTask];
-    NSDictionary*paramsDict = [self requestParamByRequest:requestTask];
+    [self _constructRequestConfigByRequest:requestTask];
     NSError *serializationError = nil;
-    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:requestTask.url parameters:paramsDict error:&serializationError];
+    NSMutableURLRequest *request = [self.sessionManager.requestSerializer requestWithMethod:requestTask.httpMethodString URLString:requestTask.url parameters:requestTask.parameters error:&serializationError];
     if (serializationError) {
             if (requestTask.failureBlock) {
                 requestTask.failureBlock(serializationError);
             }
             return;
         }
-    [self constructionURLRequest:request ByRequestTask:requestTask];
- 
     __block NSURLSessionDataTask *dataTask = nil;
     __weak __typeof(self)weakSelf = self;
     dataTask = [self.sessionManager dataTaskWithRequest:request
@@ -381,11 +379,9 @@
 #pragma mark upload
 
 - (void)_startUploadTask:(RBNetworkRequest *)uploadTask{
-      [self _requestSerializerByRequest:uploadTask];
-      [self urlStringByRequest:uploadTask];
-       NSDictionary*paramsDict = [self requestParamByRequest:uploadTask];
+      [self _constructRequestConfigByRequest:uploadTask];
       __block NSError *serializationError = nil;
-      NSMutableURLRequest *request = [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.url parameters:paramsDict constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+      NSMutableURLRequest *request = [self.sessionManager.requestSerializer multipartFormRequestWithMethod:uploadTask.httpMethodString URLString:uploadTask.url parameters:uploadTask.parameters constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
        [uploadTask.uploadFormDatas enumerateObjectsUsingBlock:^(RBUploadFormData *obj, NSUInteger idx, BOOL *stop) {
            if (obj.fileData) {
                if (obj.fileName && obj.mimeType) {
@@ -448,7 +444,7 @@
 
 #pragma mark download
 -(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
-    [self urlStringByRequest:downloadRequest];
+    [self _constructRequestConfigByRequest:downloadRequest];
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:downloadRequest.url]];
     if (downloadRequest.headers.count > 0) {
         [downloadRequest.headers enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {

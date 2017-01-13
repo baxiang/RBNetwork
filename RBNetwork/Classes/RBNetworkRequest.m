@@ -21,7 +21,7 @@
         _acceptableContentTypes = defaultConfig.defaultAcceptableContentTypes;
         _acceptableStatusCodes = defaultConfig.defaultAcceptableStatusCodes;
         _addDefaultHeaders = YES;
-        _addDefaultParams = YES;
+        _addDefaultParameters = YES;
     }
     return self;
 }
