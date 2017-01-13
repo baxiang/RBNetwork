@@ -30,22 +30,13 @@
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];
         _maxConcurrentOperationCount = RB_MAX_HTTP_CONNECTION;
 #ifdef DEBUG
-         _enableDebug = YES;
         [[RBNetworkLogger sharedLogger] startLogging:YES];
-#else
-        _enableDebug = NO;
 #endif
-        
     }
     return self;
 }
--(void)setEnableDebug:(BOOL)enableDebug{
-    if (_enableDebug == enableDebug) {
-        return;
-    }
-     _enableDebug = enableDebug;
+-(void)setupEnableDebug:(BOOL)enableDebug{
     [[RBNetworkLogger sharedLogger] startLogging:enableDebug];
-   
 }
 -(NSString *)downloadFolderPath{
     if (!_downloadFolderPath) {

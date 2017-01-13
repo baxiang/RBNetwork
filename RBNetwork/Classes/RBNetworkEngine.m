@@ -19,38 +19,38 @@
 
 typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
 
-@interface NSDictionary (RBNetworkEngine)
-- (NSMutableDictionary *)merge:(NSDictionary *)dict;
-@end
-@implementation NSDictionary (RBNetworkEngine)
-- (NSMutableDictionary *)merge:(NSDictionary *)dict {
-    @try {
-        NSMutableDictionary *result = nil;
-        if ([self isKindOfClass:[NSMutableDictionary class]]) {
-            result = (NSMutableDictionary *)self;
-        } else {
-            result = [NSMutableDictionary dictionaryWithDictionary:self];
-        }
-        for (id key in dict) {
-            if (result[key] == nil) {
-                result[key] = dict[key];
-            } else {
-                if ([result[key] isKindOfClass:[NSDictionary class]] &&
-                    [dict[key] isKindOfClass:[NSDictionary class]]) {
-                    result[key] = [result[key] merge:dict[key]];
-                } else {
-                    result[key] = dict[key];
-                }
-            }
-        }
-        return result;
-    }
-    @catch (NSException *exception) {
-        return [self mutableCopy];
-    }
-}
-@end
-
+//@interface NSDictionary (RBNetworkEngine)
+//- (NSMutableDictionary *)merge:(NSDictionary *)dict;
+//@end
+//@implementation NSDictionary (RBNetworkEngine)
+//- (NSMutableDictionary *)merge:(NSDictionary *)dict {
+//    @try {
+//        NSMutableDictionary *result = nil;
+//        if ([self isKindOfClass:[NSMutableDictionary class]]) {
+//            result = (NSMutableDictionary *)self;
+//        } else {
+//            result = [NSMutableDictionary dictionaryWithDictionary:self];
+//        }
+//        for (id key in dict) {
+//            if (result[key] == nil) {
+//                result[key] = dict[key];
+//            } else {
+//                if ([result[key] isKindOfClass:[NSDictionary class]] &&
+//                    [dict[key] isKindOfClass:[NSDictionary class]]) {
+//                    result[key] = [result[key] merge:dict[key]];
+//                } else {
+//                    result[key] = dict[key];
+//                }
+//            }
+//        }
+//        return result;
+//    }
+//    @catch (NSException *exception) {
+//        return [self mutableCopy];
+//    }
+//}
+//@end
+//
 
 #define Lock() pthread_mutex_lock(&_lock)
 #define Unlock() pthread_mutex_unlock(&_lock)
