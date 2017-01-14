@@ -8,7 +8,7 @@
 
 #import "RBNetworkConfig.h"
 #import "RBNetworkLogger.h"
-#define  PDNetworkDownloadName @"PDNetworkDownloadName"
+
 @implementation RBNetworkConfig
 + (RBNetworkConfig *)defaultConfig {
     static RBNetworkConfig *_defaultConfig = nil;
@@ -29,6 +29,14 @@
         _defaultTimeoutInterval = RB_REQUEST_TIMEOUT;
         _defaultAcceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 500)];
         _maxConcurrentOperationCount = RB_MAX_HTTP_CONNECTION;
+        
+        NSString *docmentPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+        NSString *tempDownloadFolder = [docmentPath stringByAppendingPathComponent:@"RBNetworkDownload"];
+        NSError *error = nil;
+        if (![[NSFileManager defaultManager] fileExistsAtPath:tempDownloadFolder]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:tempDownloadFolder withIntermediateDirectories:YES attributes:nil error:&error];
+        }
+        _defaultDownloadFolder = tempDownloadFolder;
 #ifdef DEBUG
         [[RBNetworkLogger sharedLogger] startLogging:YES];
 #endif
@@ -38,18 +46,5 @@
 -(void)setupEnableDebug:(BOOL)enableDebug{
     [[RBNetworkLogger sharedLogger] startLogging:enableDebug];
 }
--(NSString *)downloadFolderPath{
-    if (!_downloadFolderPath) {
-        NSString *docmentPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-        NSString *tempDownloadFolder = [docmentPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_Download",[[NSBundle mainBundle] bundleIdentifier]]];
-        NSError *error = nil;
-        if (![[NSFileManager defaultManager] fileExistsAtPath:tempDownloadFolder]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:tempDownloadFolder withIntermediateDirectories:YES attributes:nil error:&error];
-        }
-        _downloadFolderPath = tempDownloadFolder;
-    }
-    return _downloadFolderPath;
-}
-
 
 @end

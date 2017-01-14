@@ -82,11 +82,14 @@
     else if ([response isKindOfClass:WBAuthorizeResponse.class])
     {
         WBAuthorizeResponse *authorizeResponse = (WBAuthorizeResponse*)response;
-        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse accessToken] forKey:@"RBAccessToken"];
-        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse expirationDate] forKey:@"RBExpirationDate"];
-        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse refreshToken] forKey:@"RBRefreshToken"];
-        [[NSUserDefaults standardUserDefaults] setObject:[authorizeResponse userID] forKey:@"RBuserID"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        NSUserDefaults*standardUserDefaults = [NSUserDefaults standardUserDefaults];
+        [standardUserDefaults setObject:[authorizeResponse accessToken] forKey:@"RBAccessToken"];
+        [standardUserDefaults setObject:[authorizeResponse expirationDate] forKey:@"RBExpirationDate"];
+        [standardUserDefaults setObject:[authorizeResponse refreshToken] forKey:@"RBRefreshToken"];
+        [standardUserDefaults setObject:[authorizeResponse userID] forKey:@"RBuserID"];
+        if ([standardUserDefaults synchronize]) {
+            NSLog(@"写入数据成功");
+        };
         
        
     }

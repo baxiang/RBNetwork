@@ -75,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign) RBResponseSerializerType responseSerializerType;
 
+
 /**
  下载的存储路径
  */

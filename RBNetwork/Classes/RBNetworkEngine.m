@@ -17,39 +17,6 @@
 
 typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
 
-//@interface NSDictionary (RBNetworkEngine)
-//- (NSMutableDictionary *)merge:(NSDictionary *)dict;
-//@end
-//@implementation NSDictionary (RBNetworkEngine)
-//- (NSMutableDictionary *)merge:(NSDictionary *)dict {
-//    @try {
-//        NSMutableDictionary *result = nil;
-//        if ([self isKindOfClass:[NSMutableDictionary class]]) {
-//            result = (NSMutableDictionary *)self;
-//        } else {
-//            result = [NSMutableDictionary dictionaryWithDictionary:self];
-//        }
-//        for (id key in dict) {
-//            if (result[key] == nil) {
-//                result[key] = dict[key];
-//            } else {
-//                if ([result[key] isKindOfClass:[NSDictionary class]] &&
-//                    [dict[key] isKindOfClass:[NSDictionary class]]) {
-//                    result[key] = [result[key] merge:dict[key]];
-//                } else {
-//                    result[key] = dict[key];
-//                }
-//            }
-//        }
-//        return result;
-//    }
-//    @catch (NSException *exception) {
-//        return [self mutableCopy];
-//    }
-//}
-//@end
-//
-
 #define Lock() pthread_mutex_lock(&_lock)
 #define Unlock() pthread_mutex_unlock(&_lock)
 @interface RBNetworkEngine()
@@ -220,6 +187,10 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
             [request setValue:value forHTTPHeaderField:field];
         }];
     }
+    if (requestTask.type == RBRequestDownload) {
+        [self completeDownloaSavePathByRequest:requestTask];
+    }
+    
     request.timeoutInterval = requestTask.timeout;
     return  request;
 }
@@ -461,27 +432,53 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     [uploadDataTask resume];
     [self _addRequestTask:uploadTask];
 }
-
-
 #pragma mark download
--(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
-    NSMutableURLRequest *urlRequest = [self _constructRequestConfigByRequest:downloadRequest bodyWithBlock:nil];
-    NSURL *downloadFileSavePath;
+
+
+-(void)completeDownloaSavePathByRequest:(RBNetworkRequest*)downloadRequest{
+    
+    NSString *fileSavePathTemp = downloadRequest.downloadSavePath;
+    if (!fileSavePathTemp) {
+        fileSavePathTemp = [RBNetworkConfig defaultConfig].defaultDownloadFolder;
+    }
     BOOL isDirectory;
-    if(![[NSFileManager defaultManager] fileExistsAtPath:downloadRequest.downloadSavePath isDirectory:&isDirectory]) {
+    if(![[NSFileManager defaultManager] fileExistsAtPath:fileSavePathTemp isDirectory:&isDirectory]) {
         isDirectory = NO;
     }
     if (isDirectory) {
-        NSString *fileName = [urlRequest.URL lastPathComponent];
-        downloadFileSavePath = [NSURL fileURLWithPath:[NSString pathWithComponents:@[downloadRequest.downloadSavePath, fileName]] isDirectory:NO];
-    } else {
-        downloadFileSavePath = [NSURL fileURLWithPath:downloadRequest.downloadSavePath isDirectory:NO];
+        NSString *fileName = [downloadRequest.url lastPathComponent];
+        fileSavePathTemp = [NSString pathWithComponents:@[fileSavePathTemp, fileName]];;
     }
-    if ([[NSFileManager defaultManager] fileExistsAtPath:downloadFileSavePath.path]) {
-        [[NSFileManager defaultManager] removeItemAtPath:downloadFileSavePath.path error:nil];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:fileSavePathTemp]) {
+        [[NSFileManager defaultManager] removeItemAtPath:fileSavePathTemp error:nil];
     }
-    BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath].path];
-    NSData *data = [NSData dataWithContentsOfURL:[self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath]];
+    downloadRequest.downloadSavePath = fileSavePathTemp;
+}
+- (NSString *)incompleteDownloadTempPathForDownloadPath:(NSString *)downloadPath {
+    NSString *tempPath = nil;
+    NSString *md5URLString = [RBNetworkUtilities md5String:downloadPath];
+    tempPath = [[self downloadTempCacheFolder] stringByAppendingPathComponent:md5URLString];
+    return tempPath;
+}
+- (NSString *)downloadTempCacheFolder {
+    NSFileManager *fileManager = [NSFileManager new];
+    static NSString *tempFolder;
+    if (!tempFolder) {
+        NSString *tempDir = NSTemporaryDirectory();
+        tempFolder = [tempDir stringByAppendingPathComponent:@"RBDownloadTemp"];
+    }
+    NSError *error = nil;
+    if(![fileManager createDirectoryAtPath:tempFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
+        tempFolder = nil;
+    }
+    return tempFolder;
+}
+
+-(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
+    NSMutableURLRequest *urlRequest = [self _constructRequestConfigByRequest:downloadRequest bodyWithBlock:nil];
+    NSString *downloadTempCachePath = [self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath];
+    BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:downloadTempCachePath];
+    NSData *data = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:downloadTempCachePath]];
     BOOL resumeDataIsValid = [RBNetworkUtilities validateResumeData:data];
     BOOL canBeResumed = resumeDataFileExists && resumeDataIsValid;
     BOOL resumeSucceeded = NO;
@@ -489,7 +486,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     if (canBeResumed) {
         @try {
             downloadTask = [self.sessionManager downloadTaskWithResumeData:data progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-                return [NSURL fileURLWithPath:downloadFileSavePath isDirectory:NO];
+                return [NSURL fileURLWithPath:downloadRequest.downloadSavePath isDirectory:NO];
             } completionHandler:
                             ^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
                                 [self handleResponseResult:downloadTask responseObject:filePath error:error];
@@ -501,7 +498,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     }
     if (!resumeSucceeded) {
         downloadTask = [self.sessionManager downloadTaskWithRequest:urlRequest progress:downloadRequest.progressBlock destination:^NSURL * _Nonnull(NSURL * _Nonnull targetPath, NSURLResponse * _Nonnull response) {
-            return [NSURL fileURLWithPath:downloadFileSavePath.path isDirectory:NO];
+            return [NSURL fileURLWithPath:downloadRequest.downloadSavePath isDirectory:NO];
         } completionHandler:
                         ^(NSURLResponse * _Nonnull response, NSURL * _Nullable filePath, NSError * _Nullable error) {
                             [self handleResponseResult:downloadTask responseObject:filePath error:error];
@@ -511,27 +508,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     [downloadTask resume];
     [self _addRequestTask:downloadRequest];
 }
-- (NSURL *)incompleteDownloadTempPathForDownloadPath:(NSString *)downloadPath {
-    NSString *tempPath = nil;
-    NSString *md5URLString = [RBNetworkUtilities md5String:downloadPath];
-    tempPath = [[self downloadTempCacheFolder] stringByAppendingPathComponent:md5URLString];
-    return [NSURL fileURLWithPath:tempPath];
-}
-- (NSString *)downloadTempCacheFolder {
-    NSFileManager *fileManager = [NSFileManager new];
-    static NSString *tempFolder;
-    if (!tempFolder) {
-        NSString *tempDir = NSTemporaryDirectory();
-        tempFolder = [tempDir stringByAppendingPathComponent:@"RBDownloadTemp"];
-    }
-    
-    NSError *error = nil;
-    if(![fileManager createDirectoryAtPath:tempFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
-        tempFolder = nil;
-    }
-    return tempFolder;
-}
-
 
 - (void)_addRequestTask:(__kindof RBNetworkRequest*)request {
     if (request == nil)    return;

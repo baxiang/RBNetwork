@@ -134,7 +134,7 @@
     [RBNetworkEngine sendRequest:^(RBNetworkRequest * _Nullable request) {
         request.type = RBRequestDownload;
         request.url = @"http://media.roo.bo/voices/moment/1011000000200B87/2016-12-22/20161222_feb7883c4a9a0df157154ae89efd50e8.mp4";
-        request.downloadSavePath =  [[self fetchVideoFolderPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",request.url]];
+        //request.downloadSavePath =  [[self fetchVideoFolderPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",request.url]];
     } onSuccess:^(id  _Nullable responseObject) {
         NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
@@ -147,8 +147,9 @@
     }
 }
 -(BOOL)isLogin{
-    NSString *tokenStr  = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBAccessToken"];
-    NSString *userStr  = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBuserID"];
+   NSUserDefaults *user  = [NSUserDefaults standardUserDefaults];
+    NSString *tokenStr  = [user objectForKey:@"RBAccessToken"];
+    NSString *userStr  = [user objectForKey:@"RBuserID"];
     if (tokenStr&&userStr) {
         NSDate *expirationDate = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBExpirationDate"];
         if ([[NSDate date] compare:expirationDate]==NSOrderedAscending) {

@@ -31,6 +31,7 @@ if(BlockName){\
 // 每个host最大连接数
 #define RB_MAX_HTTP_CONNECTION  5
 
+
 typedef NS_ENUM(NSUInteger, RBRequestMethod)
 {
     RBRequestMethodGet = 0,
@@ -63,7 +64,7 @@ typedef NS_ENUM(NSInteger , RBRequestPriority) {
     RBRequestPriorityHigh = 4,
 };
 typedef NS_ENUM(NSInteger, RBRequestType) {
-    RBMRequestDefault = 0,    // HTTP request type, such as GET, POST, ...
+    RBMRequestDefault = 0,    // HTTP request type 
     RBRequestDownload,    // Download request type
     RBRequestUpload,      // Upload request type
    
@@ -127,9 +128,9 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
 @property (nonatomic, assign,) NSTimeInterval defaultTimeoutInterval;
 
 /**
- *  下载数据的路径
+ *  存储下载数据的文件夹 /Library/Caches/RBNetworkDownload
  */
-@property (nonatomic,copy,nullable) NSString *downloadFolderPath;
+@property (nonatomic,copy,nullable) NSString *defaultDownloadFolder;
 
 /**
   是否打开debug日志，默认在debug模式下是打开 在release模式下关闭

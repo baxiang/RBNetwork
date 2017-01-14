@@ -26,9 +26,6 @@
     return self;
 }
 
-
-
-
 - (NSMutableArray<RBUploadFormData *> *)uploadFormDatas {
     if (!_uploadFormDatas) {
         _uploadFormDatas = [NSMutableArray array];
@@ -63,7 +60,6 @@
     _progressBlock = nil;
 }
 -(void)dealloc{
-    NSLog(@"请求销毁%@",self.class);
    [self clearRequestBlock];
 }
 @end
