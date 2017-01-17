@@ -9,12 +9,21 @@
 #import "RBViewController.h"
 #import "RBNetwork.h"
 #import "WeiboSDK.h"
+#import "AFURLSessionManager.h"
+
 //#import "WXApi.h"
 #define kRedirectURI    @"http://www.sina.com"
-@interface RBViewController ()
+@interface RBViewController () <NSURLSessionDelegate>
 @property(nonatomic,copy) NSString *weiboToken;
+@property (nonatomic, strong)NSURLSessionDownloadTask *downTask;
+
+//网络会话
+@property (nonatomic, strong)NSURLSession * downLoadSession;
 @end
-@implementation RBViewController
+@implementation RBViewController{
+    CFAbsoluteTime startTime;
+
+}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -129,18 +138,78 @@
     }
     return folder;
 }
-
 -(void)downloadVideo{
+    
+      startTime = CFAbsoluteTimeGetCurrent();
+////       NSString *downloadPath = @"http://media.roo.bo/voices/moment/1011000000200B87/2016-12-22/20161222_feb7883c4a9a0df157154ae89efd50e8.mp4";
+////       NSString *currFilePath = [[self fetchVideoFolderPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",downloadPath]];
+////       NSURL *currFileURL = [NSURL fileURLWithPath:currFilePath];
+////    
+////        NSURL *videoURL = [NSURL URLWithString:downloadPath];
+////        NSURLRequest *request = [NSURLRequest requestWithURL:videoURL];
+////        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+////        AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:configuration];
+////        NSURLSessionDownloadTask *downloadTask = [manager downloadTaskWithRequest:request progress:^(NSProgress *downloadProgress){
+////        } destination:^NSURL *(NSURL *targetPath, NSURLResponse *response) {
+////            return currFileURL;
+////        } completionHandler:^(NSURLResponse *response, NSURL *filePath, NSError *error) {
+////           // completion(filePath,error);
+////            NSLog(@"---------%f",CFAbsoluteTimeGetCurrent() - startTime);
+////        }];
+////        [downloadTask resume];
+//    
     [RBNetworkEngine sendRequest:^(RBNetworkRequest * _Nullable request) {
         request.type = RBRequestDownload;
         request.url = @"http://media.roo.bo/voices/moment/1011000000200B87/2016-12-22/20161222_feb7883c4a9a0df157154ae89efd50e8.mp4";
-        //request.downloadSavePath =  [[self fetchVideoFolderPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4",request.url]];
-    } onSuccess:^(id  _Nullable responseObject) {
-        NSLog(@"%@",responseObject);
+    }onProgress:^(NSProgress * _Nullable progress) {
+         //NSLog(@"%f",progress.fractionCompleted);
+    }onSuccess:^(id  _Nullable responseObject) {
+         NSLog(@"---------%f",CFAbsoluteTimeGetCurrent() - startTime);
+        //NSLog(@"%@",responseObject);
     } onFailure:^(NSError * _Nullable error) {
-        NSLog(@"%@",error);
+        //NSLog(@"%@",error);
     }];
+
+   // [self URLSessionDownload];
 }
+-(void)URLSessionDownload{
+    NSURLSessionConfiguration   *sessionConfig =[NSURLSessionConfiguration defaultSessionConfiguration];
+    //创建网络会话
+    self.downLoadSession = [NSURLSession sessionWithConfiguration:sessionConfig delegate:self delegateQueue:[NSOperationQueue new]];
+    NSURLRequest *imgRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://media.roo.bo/voices/moment/1011000000200B87/2016-12-22/20161222_feb7883c4a9a0df157154ae89efd50e8.mp4"] cachePolicy:5 timeoutInterval:60.f];
+    //创建下载任务
+    self.downTask = [self.downLoadSession downloadTaskWithRequest:imgRequest];
+    //启动下载任务
+    [self.downTask resume];
+}
+
+
+#pragma mark 下载完成 无论成功失败
+    
+    -(void)URLSession:(NSURLSession *)session task: (NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+    {
+        
+        NSLog(@" function == %s, line == %d, error ==  %@",__FUNCTION__,__LINE__,error);
+        
+    }
+#pragma mark - 下载成功 获取下载内容
+    -(void)URLSession:(NSURLSession *)session   downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location{
+        
+        //1.获取Documents文件夹路径 （不要将视频、音频等较大资源存储在Caches路径下）
+        
+        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES) lastObject];
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSString *appendPath = [NSString stringWithFormat:@"/new.mp4"];
+        NSString *file = [documentsPath stringByAppendingString:appendPath];
+        //删除之前相同路径的文件
+        [manager removeItemAtPath:file error:nil];
+         NSLog(@"----1-----%f",CFAbsoluteTimeGetCurrent() - startTime);
+        //将视频资源从原有路径移动到自己指定的路径
+        BOOL success = [manager copyItemAtPath:location.path toPath:file error:nil];
+        if (success) {
+             NSLog(@"----2-----%f",CFAbsoluteTimeGetCurrent() - startTime);
+        }
+    }
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if (alertView.cancelButtonIndex!= buttonIndex) {
         [self loginFromWeibo];
@@ -148,8 +217,8 @@
 }
 -(BOOL)isLogin{
    NSUserDefaults *user  = [NSUserDefaults standardUserDefaults];
-    NSString *tokenStr  = [user objectForKey:@"RBAccessToken"];
-    NSString *userStr  = [user objectForKey:@"RBuserID"];
+    NSString *tokenStr  = [user stringForKey:@"RBAccessToken"];
+    NSString *userStr  = [user stringForKey:@"RBuserID"];
     if (tokenStr&&userStr) {
         NSDate *expirationDate = [[NSUserDefaults standardUserDefaults] objectForKey:@"RBExpirationDate"];
         if ([[NSDate date] compare:expirationDate]==NSOrderedAscending) {

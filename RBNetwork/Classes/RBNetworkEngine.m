@@ -24,7 +24,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
 @property (nonatomic, strong) AFHTTPSessionManager *sessionManager;
 @end
 @implementation RBNetworkEngine{
-  
     OSSpinLock _lock;
     AFJSONResponseSerializer *_jsonResponseSerializer;
     AFXMLParserResponseSerializer *_xmlResponseSerialzier;
@@ -107,7 +106,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     }
     return method;
 }
-
 
 -(NSMutableURLRequest *)_constructRequestConfigByRequest:(__kindof RBNetworkRequest *)requestTask bodyWithBlock:(void(^)(id<AFMultipartFormData> _Nonnull formData))formDataBlock{
     if (requestTask.url.length == 0) {
@@ -252,12 +250,17 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
 + (NSUInteger)sendRequest:(RBRequestBlock)requestBlock
                 onSuccess:(nullable RBSuccessBlock)successBlock
                 onFailure:(nullable RBFailureBlock)failureBlock{
+    [RBNetworkEngine sendRequest:requestBlock onProgress:nil onSuccess:successBlock onFailure:failureBlock];
+}
++ (NSUInteger)sendRequest:(nullable RBRequestBlock)requestBlock
+               onProgress:(nullable RBProgressBlock)progressBlock
+                onSuccess:(nullable RBSuccessBlock)successBlock
+                onFailure:(nullable RBSuccessBlock)failureBlock{
     RBNetworkRequest *request = [RBNetworkRequest new];
     if (requestBlock) {
         requestBlock(request);
     }
-    [[RBNetworkEngine defaultEngine] _constructRequest:request onProgress:nil onSuccess:successBlock onFailure:failureBlock];
-
+    [[RBNetworkEngine defaultEngine] _constructRequest:request onProgress:progressBlock onSuccess:successBlock onFailure:failureBlock];
 }
 
 + (RBQueueRequest *)sendChainRequest:(RBQueueRequestBlock)queueBlock
@@ -349,7 +352,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     });
 }
 - (void)requestDidSucceedWithRequest:(RBNetworkRequest *)request {
-    
     dispatch_async(dispatch_get_main_queue(), ^{
         if (request.successBlock) {
             request.successBlock(request.responseObject);
@@ -433,7 +435,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     [self _addRequestTask:uploadTask];
 }
 #pragma mark download
-
 
 -(void)completeDownloaSavePathByRequest:(RBNetworkRequest*)downloadRequest{
     

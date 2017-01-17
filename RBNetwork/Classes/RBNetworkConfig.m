@@ -14,7 +14,7 @@
     static RBNetworkConfig *_defaultConfig = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _defaultConfig = [[RBNetworkConfig alloc] init];
+        _defaultConfig = [[self alloc] init];
     });
     return _defaultConfig;
 }

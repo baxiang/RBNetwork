@@ -32,6 +32,8 @@ if(BlockName){\
 #define RB_MAX_HTTP_CONNECTION  5
 
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSUInteger, RBRequestMethod)
 {
     RBRequestMethodGet = 0,
@@ -82,6 +84,11 @@ typedef void (^RBQueueRequestBlock)( RBQueueRequest *_Nullable queueRequest);
 typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullable responseObject, BOOL *_Nullable sendNext);
 
 @interface RBNetworkConfig : NSObject
+
+// 不可用
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new  NS_UNAVAILABLE;
+
 
 + (nullable RBNetworkConfig *)defaultConfig;
 /**
@@ -139,4 +146,5 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
  */
 -(void)setupEnableDebug:(BOOL)enableDebug;
 
+NS_ASSUME_NONNULL_END
 @end
