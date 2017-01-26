@@ -36,7 +36,6 @@
 		649E78B5EA450FABDF5201E31F265FAB /* AFNetworkActivityIndicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E6FC6810D119C64AB736AAC164C846 /* AFNetworkActivityIndicatorManager.m */; };
 		6573AF9ABA59AC8D1F52B07088197F71 /* AFSecurityPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 535CEA9E000E76D5FFE16EFBC772F0BD /* AFSecurityPolicy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		69E05765A0B32D592A54BE81AD99FB81 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 159245C1D8294EF16CB016833D763E42 /* Foundation.framework */; };
-		6A940303CC7AA06CF5AC809023A8109E /* RBNetworkUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = EF3CEFE34CAF9B0F931C4FA550551BED /* RBNetworkUtilities.m */; };
 		72BE65E696A388D4CC0D75BE461FEF1B /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9ADAF03A765A3FCAC6E0673E44664E07 /* MobileCoreServices.framework */; };
 		74D8BAF3C2C0BC1423F5C42A21D0F875 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 159245C1D8294EF16CB016833D763E42 /* Foundation.framework */; };
 		7A112C0F21A62CB6F1AA8D917A6EEA6C /* AFNetworkActivityIndicatorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E295F0EE79BADE34223714D48355AF6 /* AFNetworkActivityIndicatorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -52,7 +51,6 @@
 		AE976B0E8E3DD81E4F49DBEF19D3C0AD /* AFURLSessionManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2F3716A59D28485AEF69DF83366B9209 /* AFURLSessionManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B16A078FC7FBC172A266A336AEF7F673 /* UIRefreshControl+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = B757F8E9FF70A22E4326BCE96BF34D9E /* UIRefreshControl+AFNetworking.m */; };
 		BA2D29D9265012FAC7A88D9A8CCD9989 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65A70021CC6BB93F3180DFA142F3A96E /* CoreGraphics.framework */; };
-		BACCC318D988DA42479AE8FB35EDE44F /* RBNetworkUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 25973991427311E526F4755347C2BE1F /* RBNetworkUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BC22E83FBE012D2A1B6B72B886832AF4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 159245C1D8294EF16CB016833D763E42 /* Foundation.framework */; };
 		C5F28A5D7260DB0F4EE7B2B518B70518 /* RBNetwork-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 18DF5F4510DE1DEF51FA456DCC8413A2 /* RBNetwork-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C7F632EB349D136323FF620124F48BAF /* RBNetwork-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 04051442880DC4C3B787A88465B4846E /* RBNetwork-dummy.m */; };
@@ -109,7 +107,6 @@
 		17DA4105C50CD83DA93D34E7FA8A0D1A /* WeiboSDK.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = WeiboSDK.h; path = libWeiboSDK/WeiboSDK.h; sourceTree = "<group>"; };
 		18DF5F4510DE1DEF51FA456DCC8413A2 /* RBNetwork-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RBNetwork-umbrella.h"; sourceTree = "<group>"; };
 		1F7FECDC3E4E4F279AF219A7A1F41DD8 /* Pods-RBNetwork_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-RBNetwork_Example-umbrella.h"; sourceTree = "<group>"; };
-		25973991427311E526F4755347C2BE1F /* RBNetworkUtilities.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBNetworkUtilities.h; sourceTree = "<group>"; };
 		27A448AEA24EBC465C768E0747BF59AA /* RBNetworkLogger.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RBNetworkLogger.h; sourceTree = "<group>"; };
 		2F3716A59D28485AEF69DF83366B9209 /* AFURLSessionManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = AFURLSessionManager.h; path = AFNetworking/AFURLSessionManager.h; sourceTree = "<group>"; };
 		328EDD52016299C96E0C9509FD4960FE /* AFURLRequestSerialization.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = AFURLRequestSerialization.m; path = AFNetworking/AFURLRequestSerialization.m; sourceTree = "<group>"; };
@@ -189,7 +186,6 @@
 		EACFBA88A948B1EF6BFCF0A626F54EF1 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		EB68FBA1617F5FE3144D65D65B300CDC /* Pods-RBNetwork_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-RBNetwork_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED8298915E352BD5A6AA6682CB1D707A /* Pods-RBNetwork_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-RBNetwork_Example.modulemap"; sourceTree = "<group>"; };
-		EF3CEFE34CAF9B0F931C4FA550551BED /* RBNetworkUtilities.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RBNetworkUtilities.m; sourceTree = "<group>"; };
 		EF84B834FED2FB3615268F782B95EBAB /* WBHttpRequest+WeiboUser.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "WBHttpRequest+WeiboUser.h"; path = "libWeiboSDK/WBHttpRequest+WeiboUser.h"; sourceTree = "<group>"; };
 		F31E14D9BCE4EB50AE59B17D3C69E3FC /* WeiboUser.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = WeiboUser.h; path = libWeiboSDK/WeiboUser.h; sourceTree = "<group>"; };
 		F3F45449554ABE241CE314B04B0E505D /* WBHttpRequest+WeiboToken.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "WBHttpRequest+WeiboToken.h"; path = "libWeiboSDK/WBHttpRequest+WeiboToken.h"; sourceTree = "<group>"; };
@@ -264,8 +260,6 @@
 				F707FBC8B2B01BA5C2F850D0B176D80E /* RBNetworkLogger.m */,
 				89C4660BF4A91A78569AA8D5AFFCDE95 /* RBNetworkRequest.h */,
 				42213EEBD2EBB2CD9201965FDC36A9A6 /* RBNetworkRequest.m */,
-				25973991427311E526F4755347C2BE1F /* RBNetworkUtilities.h */,
-				EF3CEFE34CAF9B0F931C4FA550551BED /* RBNetworkUtilities.m */,
 				5D1D21FB86CC19A4B7C0F2E4281F01D5 /* RBQueueRequest.h */,
 				36145AB676E3A5CB1CAD401B4A8881C8 /* RBQueueRequest.m */,
 			);
@@ -558,7 +552,6 @@
 				130B2B0C6EF10D9C02AFC565A65D0FC0 /* RBNetworkEngine.h in Headers */,
 				F92D1DA3EE6214487F461E4A7D4CE133 /* RBNetworkLogger.h in Headers */,
 				4633F645D32840D9940694602BCDB949 /* RBNetworkRequest.h in Headers */,
-				BACCC318D988DA42479AE8FB35EDE44F /* RBNetworkUtilities.h in Headers */,
 				452D6A2CC43B93E63A1A15DA8B4EC48B /* RBQueueRequest.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -741,7 +734,6 @@
 				37A2F20E7292C717B7B140C86677DEEF /* RBNetworkEngine.m in Sources */,
 				FF205BF61371F4B2783515E43E460578 /* RBNetworkLogger.m in Sources */,
 				5C0D32760A71846E6A13C6D80FF5A5FA /* RBNetworkRequest.m in Sources */,
-				6A940303CC7AA06CF5AC809023A8109E /* RBNetworkUtilities.m in Sources */,
 				0B13C0675BBE26E0555F738DD9A6EAB9 /* RBQueueRequest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

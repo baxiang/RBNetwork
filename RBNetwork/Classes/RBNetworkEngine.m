@@ -11,7 +11,6 @@
 #import "RBNetworkLogger.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <libkern/OSAtomic.h>
-#import "RBNetworkUtilities.h"
 #import <pthread/pthread.h>
 #import "AFNetworkActivityIndicatorManager.h"
 
@@ -455,9 +454,25 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     }
     downloadRequest.downloadSavePath = fileSavePathTemp;
 }
+- (NSString *)md5String:(NSString *)string {
+    if (string.length <= 0) {
+        return nil;
+    }
+    const char *value = [string UTF8String];
+    unsigned char outputBuffer[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(value, (CC_LONG)strlen(value), outputBuffer);
+    
+    NSMutableString *outputString = [[NSMutableString alloc] initWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for(NSInteger count = 0; count < CC_MD5_DIGEST_LENGTH; count++){
+        [outputString appendFormat:@"%02x",outputBuffer[count]];
+    }
+    
+    return outputString;
+}
+
 - (NSString *)incompleteDownloadTempPathForDownloadPath:(NSString *)downloadPath {
     NSString *tempPath = nil;
-    NSString *md5URLString = [RBNetworkUtilities md5String:downloadPath];
+    NSString *md5URLString = [self md5String:downloadPath];
     tempPath = [[self downloadTempCacheFolder] stringByAppendingPathComponent:md5URLString];
     return tempPath;
 }
@@ -475,12 +490,35 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     return tempFolder;
 }
 
+
+- (BOOL)validateResumeData:(NSData *)data {
+    // From http://stackoverflow.com/a/22137510/3562486
+    if (!data || [data length] < 1) return NO;
+    
+    NSError *error;
+    NSDictionary *resumeDictionary = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:&error];
+    if (!resumeDictionary || error) return NO;
+    
+    // Before iOS 9 & Mac OS X 10.11
+#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED < 90000)\
+|| (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED < 101100)
+    NSString *localFilePath = [resumeDictionary objectForKey:@"NSURLSessionResumeInfoLocalPath"];
+    if ([localFilePath length] < 1) return NO;
+    return [[NSFileManager defaultManager] fileExistsAtPath:localFilePath];
+#endif
+    // After iOS 9 we can not actually detects if the cache file exists. This plist file has a somehow
+    // complicated structue. Besides, the plist structure is different between iOS 9 and iOS 10.
+    // We can only assume that the plist being successfully parsed means the resume data is valid.
+    return YES;
+}
+
+
 -(void)_startDownloadTask:(RBNetworkRequest*)downloadRequest{
     NSMutableURLRequest *urlRequest = [self _constructRequestConfigByRequest:downloadRequest bodyWithBlock:nil];
     NSString *downloadTempCachePath = [self incompleteDownloadTempPathForDownloadPath:downloadRequest.downloadSavePath];
     BOOL resumeDataFileExists = [[NSFileManager defaultManager] fileExistsAtPath:downloadTempCachePath];
     NSData *data = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:downloadTempCachePath]];
-    BOOL resumeDataIsValid = [RBNetworkUtilities validateResumeData:data];
+    BOOL resumeDataIsValid = [self validateResumeData:data];
     BOOL canBeResumed = resumeDataFileExists && resumeDataIsValid;
     BOOL resumeSucceeded = NO;
     __block NSURLSessionDownloadTask *downloadTask = nil;

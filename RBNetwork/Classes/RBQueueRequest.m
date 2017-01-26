@@ -19,7 +19,6 @@
 @property (nonatomic, copy) RBBatchSuccessBlock queueSuccessBlock;
 @property (nonatomic, copy) RBBatchFailureBlock queueFailureBlock;
 
-
 @end
 
 @implementation RBQueueRequest : NSObject

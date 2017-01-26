@@ -72,6 +72,13 @@ typedef NS_ENUM(NSInteger, RBRequestType) {
    
 };
 
+typedef NS_ENUM(NSUInteger, RBCacheType) {
+    RBIgnoreCache = 0,  // 忽略缓存,
+    RBOnlyUpdateCache,   //不使用缓存,只使用网络加载,加载成功后更新缓存
+    RBLoadAndUpdateCache, // 先加载缓存,再请求网络,并且更新缓存(要更新缓存,这种情况需要设置缓存过期时间)
+};
+
+
 typedef void (^RBRequestBlock)(RBNetworkRequest *_Nullable request);
 typedef void (^RBCancelBlock)(RBNetworkRequest * _Nullable request);
 typedef void (^RBProgressBlock)(NSProgress *_Nullable progress);
@@ -85,7 +92,6 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
 
 @interface RBNetworkConfig : NSObject
 
-// 不可用
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new  NS_UNAVAILABLE;
 
@@ -109,7 +115,7 @@ typedef void (^RBQueueNextBlock)(RBNetworkRequest *_Nullable request, id _Nullab
  */
 @property (nonatomic, assign) RBRequestMethod defaultRequestMethod;
 /**
- *   默认  RBRequestSerializerTypeHTTP
+ *   默认  RBRequestSerializerTypeHTTP  application/x-www-form-urlencoded
  */
 @property (nonatomic, assign) RBRequestSerializerType  defaultRequestSerializer;
 /**
