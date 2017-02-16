@@ -1,9 +1,9 @@
 //
 //  RBNetworkEngine.m
-//  Pudding
+//  
 //
 //  Created by baxiang on 16/8/29.
-//  Copyright © 2016年 Zhi Kuiyu. All rights reserved.
+//  Copyright © 2016年 baxiang. All rights reserved.
 //
 
 #import "RBNetworkEngine.h"
@@ -76,7 +76,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
 
 #pragma mark network config 请求配置
 
-- (NSString *)httpMethodStringByRequest:(__kindof RBNetworkRequest  *)request
+- (NSString *)_httpMethodStringByRequest:(__kindof RBNetworkRequest  *)request
 {
     NSString *method = nil;
     switch (request.method)
@@ -165,7 +165,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
         default:
             break;
     }
-    NSString *methodString = [self httpMethodStringByRequest:requestTask];
+    NSString *methodString = [self _httpMethodStringByRequest:requestTask];
     NSError *serializationError = nil;
     NSMutableURLRequest *request = nil;
     if (formDataBlock) {
@@ -189,6 +189,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     }
     
     request.timeoutInterval = requestTask.timeout;
+    request.allowsCellularAccess = requestTask.allowsCellularAccess;
     return  request;
 }
 
@@ -241,6 +242,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
             break;
         case RBRequestUpload:
             [self _startUploadTask:request];
+            break;
         default:
             [self _startDefaultTask:request];
             break;
@@ -461,7 +463,6 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     const char *value = [string UTF8String];
     unsigned char outputBuffer[CC_MD5_DIGEST_LENGTH];
     CC_MD5(value, (CC_LONG)strlen(value), outputBuffer);
-    
     NSMutableString *outputString = [[NSMutableString alloc] initWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
     for(NSInteger count = 0; count < CC_MD5_DIGEST_LENGTH; count++){
         [outputString appendFormat:@"%02x",outputBuffer[count]];

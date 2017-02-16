@@ -1,9 +1,9 @@
 //
 //  PDNetworkConfig.m
-//  Pudding
+//  
 //
 //  Created by baxiang on 16/8/29.
-//  Copyright © 2016年 Zhi Kuiyu. All rights reserved.
+//  Copyright © 2016年 baxiang. All rights reserved.
 //
 
 #import "RBNetworkConfig.h"

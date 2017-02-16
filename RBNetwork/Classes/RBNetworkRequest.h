@@ -1,9 +1,9 @@
 
 //  RBNetworkRequest.h
-//  Pudding
+//  
 //
 //  Created by baxiang on 16/8/29.
-//  Copyright © 2016年 Zhi Kuiyu. All rights reserved.
+//  Copyright © 2016年 baxiang. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -47,6 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSTimeInterval timeout;
 
 /**
+ 是否允许使用蜂窝数据 默认允许
+ */
+@property (nonatomic, assign) BOOL allowsCellularAccess;
+
+/**
  请求header
  */
 @property (nonatomic, copy,nullable)NSDictionary<NSString *,NSString *>*headers;
@@ -54,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  是否使用RBNetworkConfig 中defaultHeaders  默认是YES
  */
-@property (nonatomic, assign, readonly) BOOL addDefaultHeaders;
+@property (nonatomic, assign) BOOL addDefaultHeaders;
 
 /**
    请求参数
@@ -64,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  是否使用RBNetworkConfig 中defaultParams 默认是YES
  */
-@property (nonatomic, assign, readonly) BOOL addDefaultParameters;
+@property (nonatomic, assign) BOOL addDefaultParameters;
 /**
   Request 序列化类型
  */
