@@ -312,6 +312,7 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
     Lock();
     RBNetworkRequest *request = _requestRecordDict[@(task.taskIdentifier)];
     Unlock();
+    [self _responseSerializerByRequest:request];
     NSError * __autoreleasing serializationError = nil;
     NSError * __autoreleasing validationError = nil;
     NSError *requestError = nil;
@@ -324,11 +325,11 @@ typedef void (^RBConstructingFormDataBlock)(id<AFMultipartFormData> formData);
             case RBResponseSerializerTypeHTTP:
                 break;
             case RBResponseSerializerTypeJSON:
-                request.responseObject = [self.jsonResponseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
+                request.responseObject = [self.sessionManager.responseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
                 request.responseJSONObject = request.responseObject;
                 break;
             case RBResponseSerializerTypeXML:
-                request.responseObject = [self.xmlParserResponseSerialzier responseObjectForResponse:task.response data:request.responseData error:&serializationError];
+                request.responseObject = [self.sessionManager.responseSerializer responseObjectForResponse:task.response data:request.responseData error:&serializationError];
                 break;
         }
     }
